@@ -1,21 +1,22 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb'); 
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('./'));
 
-// --- A CHAVE DO SEU COFRE NA NUVEM (LINK DIRETO) ---
+// --- CONFIGURAÇÃO DE ARQUIVOS (HTML, CSS, IMAGENS) ---
+// Isso garante que o Render ache seus arquivos visuais
+app.use(express.static(path.join(__dirname)));
+
+// --- CONEXÃO COM O BANCO DE DADOS ---
 const uri = "mongodb://gerente_balbina:Balbina14%2A@ac-osb5xdw-shard-00-00.kqaqzit.mongodb.net:27017,ac-osb5xdw-shard-00-01.kqaqzit.mongodb.net:27017,ac-osb5xdw-shard-00-02.kqaqzit.mongodb.net:27017/?ssl=true&replicaSet=atlas-vo7onh-shard-0&authSource=admin&appName=Cluster0";
 const client = new MongoClient(uri);
 
-let db;
-let configCollection;
-let lancamentosCollection;
+let db, configCollection, lancamentosCollection;
 
-// Função para ligar o banco de dados quando o servidor iniciar
 async function conectarBanco() {
     try {
         await client.connect();
@@ -23,26 +24,13 @@ async function conectarBanco() {
         configCollection = db.collection("configuracoes");
         lancamentosCollection = db.collection("lancamentos");
         console.log("🟢 Banco de Dados Permanente Conectado com Sucesso!");
-
-        // Se o banco for novo e estiver vazio, ele cria a configuração inicial sozinho
-        const configExistente = await configCollection.findOne({ id: "geral" });
-        if (!configExistente) {
-            await configCollection.insertOne({
-                id: "geral",
-                mesVigente: "ABRIL 2026",
-                metaLoja: 244728.58,
-                metasMensais: { "PANIFICAÇÃO": 10000, "CONFEITARIA": 8000, "TORTAS SALGADAS": 5000, "PIZZA": 6000, "REFEIÇÃO": 15000 },
-                limiteAvariaKg: { "PANIFICAÇÃO": 2.000, "CONFEITARIA": 1.500, "TORTAS SALGADAS": 1.000, "PIZZA": 1.000, "REFEIÇÃO": 2.500 }
-            });
-            console.log("⚙️ Configurações iniciais criadas no banco.");
-        }
     } catch (erro) {
         console.error("🔴 Erro ao conectar no MongoDB:", erro);
     }
 }
 conectarBanco();
 
-// Funções de Matemática
+// --- FUNÇÕES AUXILIARES (DATAS E DIAS ÚTEIS) ---
 function obterDiasUteisDoMes(ano, mes) {
     let diasNoMes = new Date(ano, mes, 0).getDate();
     let domingos = 0;
@@ -72,12 +60,21 @@ function extrairPrefixoData(mesVigente) {
     return null;
 }
 
-// --- COMUNICAÇÃO COM O BANCO DE DADOS ---
+// --- ROTAS DE NAVEGAÇÃO (PARA NÃO DAR ERRO NO LINK) ---
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/gerente', (req, res) => {
+    res.sendFile(path.join(__dirname, 'gerente.html'));
+});
+
+// --- ROTAS DA API (COMUNICAÇÃO COM O BANCO) ---
 
 app.post('/api/configuracoes', async (req, res) => {
     const novasConfigs = req.body;
     await configCollection.updateOne({ id: "geral" }, { $set: novasConfigs }, { upsert: true });
-    res.json({ mensagem: "Configurações salvas no Banco!" });
+    res.json({ mensagem: "Configurações salvas!" });
 });
 
 app.get('/api/configuracoes', async (req, res) => {
@@ -92,7 +89,7 @@ app.post('/api/lancamento-diario', async (req, res) => {
         { $set: novo },
         { upsert: true }
     );
-    res.json({ mensagem: "Lançamento registrado no Banco Permanente!" });
+    res.json({ mensagem: "Lançamento registrado!" });
 });
 
 app.get('/api/consulta-dia/:setor/:data', async (req, res) => {
@@ -102,8 +99,8 @@ app.get('/api/consulta-dia/:setor/:data', async (req, res) => {
     res.json(registro || null);
 });
 
+// --- LÓGICA DO PLACAR (MATEMÁTICA DE PONTOS) ---
 app.get('/api/placar', async (req, res) => {
-    
     const configuracoes = await configCollection.findOne({ id: "geral" });
     if (!configuracoes) return res.json({ erro: "Configurações não carregadas" });
 
@@ -140,19 +137,14 @@ app.get('/api/placar', async (req, res) => {
 
     nomesSetores.forEach(nomeSetor => {
         let lancamentosDoSetor = lancamentosDoMes.filter(item => item.nomeDoSetor === nomeSetor);
-        
         let ptsVendas = 0, ptsQualidade = 0, ptsAvaria = 0, ptsAbast = 0, ptsLimp = 0, ptsAssid = 0;
         let somaVendas = 0;
 
         lancamentosDoSetor.forEach(lancamento => {
-            somaVendas += lancamento.vendasReais || 0;
-
+            somaVendas += (lancamento.vendasReais || 0);
+            
             const limiteDiarioAvaria = configuracoes.limiteAvariaKg[nomeSetor] || 1;
-            let ganhoAvaria = 0;
-            if ((lancamento.avariaKg || 0) <= limiteDiarioAvaria) {
-                ganhoAvaria = maxDiaAvaria; 
-            }
-            ptsAvaria += ganhoAvaria;
+            if ((lancamento.avariaKg || 0) <= limiteDiarioAvaria) ptsAvaria += maxDiaAvaria;
 
             let ganhoQualidade = maxDiaQualidade;
             if (lancamento.qualidade.reclamacao) ganhoQualidade = 0; 
@@ -160,34 +152,34 @@ app.get('/api/placar', async (req, res) => {
                 if (!lancamento.qualidade.padrao) ganhoQualidade -= (maxDiaQualidade * 0.3);
                 if (!lancamento.qualidade.sabor) ganhoQualidade -= (maxDiaQualidade * 0.3);
             }
-            if (ganhoQualidade < 0) ganhoQualidade = 0;
-            ptsQualidade += ganhoQualidade;
+            ptsQualidade += Math.max(0, ganhoQualidade);
 
             ptsAbast += (lancamento.abastecimentoAcertos || 0) * maxDiaAbast;
             ptsLimp += ((lancamento.limpezaQtdSim || 0) / 3) * maxDiaLimp; 
 
             let ganhoAssid = maxDiaAssid;
             if (lancamento.assiduidade.falta) ganhoAssid = 0;
-            else if (lancamento.assiduidade.atraso) ganhoAssid = ganhoAssid / 2;
+            else if (lancamento.assiduidade.atraso) ganhoAssid /= 2;
             ptsAssid += ganhoAssid;
         });
 
         const metaMensal = configuracoes.metasMensais[nomeSetor] || 1;
-        ptsVendas = (somaVendas / metaMensal) * maxPts.vendas;
+        ptsVendas = Math.min((somaVendas / metaMensal) * maxPts.vendas, maxPts.vendas);
 
-        if (ptsVendas > maxPts.vendas) ptsVendas = maxPts.vendas;
-        if (ptsAvaria > maxPts.avaria) ptsAvaria = maxPts.avaria;
-        if (ptsQualidade > maxPts.qualidade) ptsQualidade = maxPts.qualidade;
-        if (ptsAbast > maxPts.abastecimento) ptsAbast = maxPts.abastecimento;
-        if (ptsLimp > maxPts.limpeza) ptsLimp = maxPts.limpeza;
-        if (ptsAssid > maxPts.assiduidade) ptsAssid = maxPts.assiduidade;
-
-        let totalSetor = ptsVendas + ptsAvaria + ptsQualidade + ptsAbast + ptsLimp + ptsAssid;
+        let totalSetor = ptsVendas + Math.min(ptsAvaria, maxPts.avaria) + Math.min(ptsQualidade, maxPts.qualidade) + 
+                         Math.min(ptsAbast, maxPts.abastecimento) + Math.min(ptsLimp, maxPts.limpeza) + Math.min(ptsAssid, maxPts.assiduidade);
+        
         pontuacaoTotalLoja += totalSetor;
-
         setoresCalculados.push({
             nome: nomeSetor,
-            pontos: { vendas: ptsVendas, qualidade: ptsQualidade, avaria: ptsAvaria, abastecimento: ptsAbast, limpeza: ptsLimp, assiduidade: ptsAssid }
+            pontos: { 
+                vendas: Math.round(ptsVendas), 
+                qualidade: Math.round(ptsQualidade), 
+                avaria: Math.round(ptsAvaria), 
+                abastecimento: Math.round(ptsAbast), 
+                limpeza: Math.round(ptsLimp), 
+                assiduidade: Math.round(ptsAssid) 
+            }
         });
     });
 
@@ -198,7 +190,8 @@ app.get('/api/placar', async (req, res) => {
     });
 });
 
-const PORTA = 3000;
+// --- LIGANDO O MOTOR ---
+const PORTA = process.env.PORT || 3000;
 app.listen(PORTA, () => {
     console.log(`🚀 Cérebro rodando na porta ${PORTA}`);
 });
