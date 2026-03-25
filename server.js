@@ -5,7 +5,7 @@ const { MongoClient } = require('mongodb');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static('./'));
 
 // --- A CHAVE DO SEU COFRE NA NUVEM (LINK DIRETO) ---
 const uri = "mongodb://gerente_balbina:Balbina14%2A@ac-osb5xdw-shard-00-00.kqaqzit.mongodb.net:27017,ac-osb5xdw-shard-00-01.kqaqzit.mongodb.net:27017,ac-osb5xdw-shard-00-02.kqaqzit.mongodb.net:27017/?ssl=true&replicaSet=atlas-vo7onh-shard-0&authSource=admin&appName=Cluster0";
