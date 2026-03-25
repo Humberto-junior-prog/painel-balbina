@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerente - Dona Balbina</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .app-container { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { text-align: center; color: #d35400; margin-top: 0; }
+        .abas { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn-aba { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background-color: #eee; color: #555; }
+        .btn-aba.ativo { background-color: #d35400; color: white; }
+        .tela { display: none; }
+        .tela.ativa { display: block; }
+        .card-secao { background-color: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .card-secao h4 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+        label { display: block; font-weight: 600; margin-top: 10px; font-size: 14px; }
+        select, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        .botoes-setor { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .btn-setor { flex: 1 1 30%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #fff; cursor: pointer; font-size: 13px; font-weight: 600; color: #555; transition: 0.2s; }
+        .btn-setor.ativo { background-color: #d35400; color: white; border-color: #d35400; }
+        .btn-salvar { width: 100%; padding: 15px; background-color: #27ae60; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-salvar:hover { background-color: #219150; }
+        .dupla-cascata { display: flex; gap: 10px; margin-top: 5px; }
+        .dupla-cascata select { margin-top: 0; }
+        .painel-data-trava { background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 10px; border-radius: 4px; margin-bottom: 10px; }
+        
+        .input-destaque { border-color: #0d6efd !important; border-width: 2px !important; background-color: #f8fbff; font-weight: bold; color: #0d6efd; }
+        .painel-resumo { background-color: #e8f4fd; border: 1px solid #b6d4fe; padding: 12px; border-radius: 6px; margin-top: 15px; margin-bottom: 15px; font-size: 14px; line-height: 1.5; }
+        .alerta-soma { font-weight: bold; color: #dc3545; }
+        .sucesso-soma { font-weight: bold; color: #198754; }
+        .etiqueta-diaria { font-size: 12px; color: #777; font-weight: normal; margin-left: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h2>Painel de Controle 📊</h2>
+
+        <div class="abas">
+            <button class="btn-aba ativo" id="btn-lancamento" onclick="mudarAba('lancamento')">📝 Lançar Diário</button>
+            <button class="btn-aba" id="btn-config" onclick="mudarAba('config')">⚙️ Metas do Mês</button>
+        </div>
+
+        <div id="tela-lancamento" class="tela ativa">
+            <form id="form-diario">
+                <div class="card-secao">
+                    <div class="painel-data-trava">
+                        <span style="font-size: 12px; color: #666;">Lançando dados para o mês de:</span><br>
+                        <span id="mesExibicao" style="font-size: 18px; font-weight: bold; color: #d35400;">CARREGANDO...</span>
+                    </div>
+
+                    <label>📅 Selecione apenas o DIA:</label>
+                    <select id="diaRef" onchange="verificarDadosDoDia()" required>
+                        <option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option>
+                        <option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option>
+                        <option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option>
+                        <option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option>
+                        <option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option>
+                        <option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option>
+                        <option value="31">31</option>
+                    </select>
+                    
+                    <label>🏬 Escolha o Setor:</label>
+                    <div class="botoes-setor">
+                        <button type="button" class="btn-setor ativo" onclick="selecionarSetor('PANIFICAÇÃO', this)">🥖 Panificação</button>
+                        <button type="button" class="btn-setor" onclick="selecionarSetor('CONFEITARIA', this)">🍰 Confeitaria</button>
+                        <button type="button" class="btn-setor" onclick="selecionarSetor('TORTAS SALGADAS', this)">🥧 Tortas</button>
+                        <button type="button" class="btn-setor" onclick="selecionarSetor('PIZZA', this)">🍕 Pizza</button>
+                        <button type="button" class="btn-setor" onclick="selecionarSetor('REFEIÇÃO', this)">🍲 Refeição</button>
+                    </div>
+                    <input type="hidden" id="setor" value="PANIFICAÇÃO">
+                </div>
+
+                <div class="card-secao">
+                    <h4>💰 1. Vendas e 🗑️ 2. Quebras</h4>
+                    <label>Valor Vendido em R$:</label>
+                    <input type="text" id="vendaDia" placeholder="0,00" oninput="aplicarMascaraMoeda(this)" required>
+                    
+                    <label>Peso da Avaria jogada fora (KG):</label>
+                    <input type="text" id="avariaDia" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                </div>
+
+                <div class="card-secao">
+                    <h4>⭐ 3. Qualidade do Produto</h4>
+                    <label>Produtos padronizados (tamanho/cor/recheio)?</label>
+                    <select id="qualPadr"><option value="sim">Sim</option><option value="nao">Não</option></select>
+                    <label>Sabor e textura aprovados na degustação?</label>
+                    <select id="qualSabor"><option value="sim">Sim</option><option value="nao">Não</option></select>
+                    <label style="color: red;">Houve RECLAMAÇÃO de cliente hoje?</label>
+                    <select id="qualReclamacao"><option value="nao">Não</option><option value="sim">Sim (Zera o dia)</option></select>
+                </div>
+
+                <div class="card-secao">
+                    <h4>🕒 4. Abastecimento</h4>
+                    <div id="perguntas-abastecimento"></div>
+                </div>
+
+                <div class="card-secao">
+                    <h4>🧹 5. Organização e Limpeza</h4>
+                    <label>Bancadas limpas e organizadas?</label>
+                    <select class="limpeza-chk" id="limpBancada"><option value="sim">Sim</option><option value="nao">Não</option></select>
+                    <label>Chão limpo?</label>
+                    <select class="limpeza-chk" id="limpChao"><option value="sim">Sim</option><option value="nao">Não</option></select>
+                    <label>Bandejas e formas organizadas?</label>
+                    <select class="limpeza-chk" id="limpForma"><option value="sim">Sim</option><option value="nao">Não</option></select>
+                </div>
+
+                <div class="card-secao">
+                    <h4>👤 6. Assiduidade da Equipe</h4>
+                    <label>Houve alguma FALTA INJUSTIFICADA?</label>
+                    <select id="assidFalta"><option value="nao">Não</option><option value="sim">Sim (Zera o dia)</option></select>
+                    <label>Houve algum ATRASO?</label>
+                    <select id="assidAtraso"><option value="nao">Não</option><option value="sim">Sim (Perde metade)</option></select>
+                </div>
+
+                <button type="submit" class="btn-salvar">📤 Enviar Avaliação do Dia</button>
+            </form>
+        </div>
+
+        <div id="tela-config" class="tela">
+            <p style="font-size: 13px; color: #666;">Altere aqui as metas oficias.</p>
+            <form id="form-config">
+                <div class="card-secao">
+                    <h4>📅 Período do Painel</h4>
+                    <label>Mês e Ano exibidos na TV:</label>
+                    <div class="dupla-cascata">
+                        <select id="mes-select" onchange="calcularMetasDiarias()" required>
+                            <option value="">Mês...</option>
+                            <option value="JANEIRO">Janeiro</option>
+                            <option value="FEVEREIRO">Fevereiro</option>
+                            <option value="MARÇO">Março</option>
+                            <option value="ABRIL">Abril</option>
+                            <option value="MAIO">Maio</option>
+                            <option value="JUNHO">Junho</option>
+                            <option value="JULHO">Julho</option>
+                            <option value="AGOSTO">Agosto</option>
+                            <option value="SETEMBRO">Setembro</option>
+                            <option value="OUTUBRO">Outubro</option>
+                            <option value="NOVEMBRO">Novembro</option>
+                            <option value="DEZEMBRO">Dezembro</option>
+                        </select>
+                        <select id="ano-select" onchange="calcularMetasDiarias()" required>
+                            <option value="">Ano...</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-secao">
+                    <h4>💰 Metas de Venda Mensal (R$)</h4>
+                    
+                    <label style="color: #0d6efd;">Meta Global da Padaria: <span id="diaria-loja" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
+                    <input type="text" id="meta-loja" class="input-destaque" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    
+                    <div class="painel-resumo">
+                        Soma dos Setores: <strong id="soma-total">R$ 0,00</strong><br>
+                        Status: <span id="status-meta"></span>
+                    </div>
+
+                    <label>Panificação: <span id="diaria-pan" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
+                    <input type="text" id="meta-pan" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    
+                    <label>Confeitaria: <span id="diaria-con" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
+                    <input type="text" id="meta-con" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    
+                    <label>Tortas Salgadas: <span id="diaria-tor" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
+                    <input type="text" id="meta-tor" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    
+                    <label>Pizza: <span id="diaria-piz" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
+                    <input type="text" id="meta-piz" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    
+                    <label>Refeição: <span id="diaria-ref" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
+                    <input type="text" id="meta-ref" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                </div>
+
+                <div class="card-secao">
+                    <h4>🗑️ Limite Diário de Avaria (KG)</h4>
+                    <label>Panificação:</label><input type="text" id="av-pan" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    <label>Confeitaria:</label><input type="text" id="av-con" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    <label>Tortas Salgadas:</label><input type="text" id="av-tor" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    <label>Pizza:</label><input type="text" id="av-piz" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    <label>Refeição:</label><input type="text" id="av-ref" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                </div>
+                <button type="submit" class="btn-salvar">💾 Salvar Novas Metas</button>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        function aplicarMascaraMoeda(input) {
+            let valor = input.value.replace(/\D/g, ""); 
+            if (valor === "") { input.value = ""; return; }
+            valor = (Number(valor) / 100).toFixed(2) + ""; 
+            valor = valor.replace(".", ","); 
+            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); 
+            input.value = valor;
+        }
+
+        function aplicarMascaraPeso(input) {
+            let valor = input.value.replace(/\D/g, ""); 
+            if (valor === "") { input.value = ""; return; }
+            valor = (Number(valor) / 1000).toFixed(3) + ""; 
+            valor = valor.replace(".", ",");
+            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+            input.value = valor;
+        }
+
+        function converterParaNumero(textoFormatado) {
+            if (!textoFormatado) return 0;
+            return Number(textoFormatado.replace(/\./g, "").replace(",", "."));
+        }
+
+        let configuracoesIniciaisCarregadas = false;
+        let prefixoDataAtual = ""; 
+
+        function mudarAba(aba) {
+            document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+            document.querySelectorAll('.btn-aba').forEach(b => b.classList.remove('ativo'));
+            document.getElementById('tela-' + aba).classList.add('ativa');
+            document.getElementById('btn-' + aba).classList.add('ativo');
+            
+            if(aba === 'config' && !configuracoesIniciaisCarregadas) {
+                carregarConfiguracoes();
+            }
+        }
+
+        function formatarPrefixo(mesVigente) {
+            if (!mesVigente) return "";
+            const texto = String(mesVigente).toUpperCase();
+            let mesNum = "";
+            
+            if (texto.includes("JANEIRO")) mesNum = "01";
+            else if (texto.includes("FEVEREIRO")) mesNum = "02";
+            else if (texto.includes("MARÇO") || texto.includes("MARCO")) mesNum = "03";
+            else if (texto.includes("ABRIL")) mesNum = "04";
+            else if (texto.includes("MAIO")) mesNum = "05";
+            else if (texto.includes("JUNHO")) mesNum = "06";
+            else if (texto.includes("JULHO")) mesNum = "07";
+            else if (texto.includes("AGOSTO")) mesNum = "08";
+            else if (texto.includes("SETEMBRO")) mesNum = "09";
+            else if (texto.includes("OUTUBRO")) mesNum = "10";
+            else if (texto.includes("NOVEMBRO")) mesNum = "11";
+            else if (texto.includes("DEZEMBRO")) mesNum = "12";
+            
+            let anoNum = "";
+            const anos = ["2025", "2026", "2027", "2028", "2029", "2030"];
+            for (let a of anos) {
+                if (texto.includes(a)) { anoNum = a; break; }
+            }
+            
+            if (mesNum && anoNum) return `${anoNum}-${mesNum}`;
+            return "";
+        }
+
+        async function inicializarApp() {
+            try {
+                const res = await fetch('/api/configuracoes');
+                const config = await res.json();
+                
+                const mesOficial = config.mesVigente || "NÃO CONFIGURADO";
+                document.getElementById('mesExibicao').innerText = mesOficial;
+                prefixoDataAtual = formatarPrefixo(mesOficial);
+                
+                verificarDadosDoDia(); 
+            } catch (erro) {
+                console.log("Aguardando servidor...");
+            }
+        }
+        
+        inicializarApp();
+
+        const checklistAbastecimento = {
+            "PANIFICAÇÃO": ["Vitrine completamente abastecida até às 9hrs?", "Garantida a presença contínua de Pão Francês, Pão de Queijo e Empadão?"],
+            "CONFEITARIA": ["Bolos Caseiros abastecidos?", "Tortas confeitadas na vitrine de exposição?", "Variedade de Doces na vitrine de exposição?"],
+            "TORTAS SALGADAS": ["Mesa de exposição abastecida até às 11hrs?"],
+            "PIZZA": ["Todos os sabores expostos na ilha de congelados?"],
+            "REFEIÇÃO": ["Almoço disponível para venda até às 11hrs?"]
+        };
+
+        function selecionarSetor(nomeDoSetor, botaoClicado) {
+            document.querySelectorAll('.btn-setor').forEach(b => b.classList.remove('ativo'));
+            botaoClicado.classList.add('ativo');
+            document.getElementById('setor').value = nomeDoSetor;
+            verificarDadosDoDia();
+        }
+
+        async function verificarDadosDoDia() {
+            if (!prefixoDataAtual) return; 
+            
+            const setor = document.getElementById('setor').value;
+            const diaEscolhido = document.getElementById('diaRef').value;
+            const dataValidaMontada = `${prefixoDataAtual}-${diaEscolhido}`;
+            
+            const divPerguntas = document.getElementById('perguntas-abastecimento');
+            divPerguntas.innerHTML = "";
+            checklistAbastecimento[setor].forEach((pergunta, index) => {
+                divPerguntas.innerHTML += `<label>${pergunta}</label><select class="abast-chk" id="abast-${index}"><option value="sim">Sim</option><option value="nao">Não</option></select>`;
+            });
+
+            try {
+                const resposta = await fetch(`/api/consulta-dia/${encodeURIComponent(setor)}/${dataValidaMontada}`);
+                const dadosAntigos = await resposta.json();
+
+                if (dadosAntigos) {
+                    document.getElementById('vendaDia').value = (dadosAntigos.vendasReais).toFixed(2).replace('.', ',');
+                    aplicarMascaraMoeda(document.getElementById('vendaDia')); 
+                    document.getElementById('avariaDia').value = (dadosAntigos.avariaKg).toFixed(3).replace('.', ',');
+                    aplicarMascaraPeso(document.getElementById('avariaDia'));
+                    document.getElementById('qualPadr').value = dadosAntigos.qualidade.padrao ? "sim" : "nao";
+                    document.getElementById('qualSabor').value = dadosAntigos.qualidade.sabor ? "sim" : "nao";
+                    document.getElementById('qualReclamacao').value = dadosAntigos.qualidade.reclamacao ? "sim" : "nao";
+                    document.getElementById('assidFalta').value = dadosAntigos.assiduidade.falta ? "sim" : "nao";
+                    document.getElementById('assidAtraso').value = dadosAntigos.assiduidade.atraso ? "sim" : "nao";
+                } else {
+                    document.getElementById('vendaDia').value = "";
+                    document.getElementById('avariaDia').value = "";
+                    document.getElementById('qualPadr').value = "sim";
+                    document.getElementById('qualSabor').value = "sim";
+                    document.getElementById('qualReclamacao').value = "nao";
+                    document.getElementById('assidFalta').value = "nao";
+                    document.getElementById('assidAtraso').value = "nao";
+                }
+            } catch (erro) {
+                console.log("Servidor não respondeu a consulta");
+            }
+        }
+
+        document.getElementById('form-diario').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const selectsAbast = document.querySelectorAll('.abast-chk');
+            let acertosAbast = 0;
+            selectsAbast.forEach(s => { if(s.value === 'sim') acertosAbast++; });
+            let proporcaoAbastecimento = selectsAbast.length > 0 ? (acertosAbast / selectsAbast.length) : 0;
+
+            const selectsLimp = document.querySelectorAll('.limpeza-chk');
+            let acertosLimp = 0;
+            selectsLimp.forEach(s => { if(s.value === 'sim') acertosLimp++; });
+
+            const diaEscolhido = document.getElementById('diaRef').value;
+            const dataFinalParaSalvar = `${prefixoDataAtual}-${diaEscolhido}`;
+
+            const pacote = {
+                nomeDoSetor: document.getElementById('setor').value,
+                dataReferencia: dataFinalParaSalvar, 
+                vendasReais: converterParaNumero(document.getElementById('vendaDia').value),
+                avariaKg: converterParaNumero(document.getElementById('avariaDia').value),
+                qualidade: {
+                    padrao: document.getElementById('qualPadr').value === 'sim',
+                    sabor: document.getElementById('qualSabor').value === 'sim',
+                    reclamacao: document.getElementById('qualReclamacao').value === 'sim'
+                },
+                abastecimentoAcertos: proporcaoAbastecimento, 
+                limpezaQtdSim: acertosLimp,
+                assiduidade: {
+                    falta: document.getElementById('assidFalta').value === 'sim',
+                    atraso: document.getElementById('assidAtraso').value === 'sim'
+                }
+            };
+
+            try {
+                const resposta = await fetch('/api/lancamento-diario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(pacote)
+                });
+                if (resposta.ok) alert('✅ Dados salvos! A TV vai atualizar.');
+            } catch (erro) {
+                alert('Erro ao enviar. O servidor está rodando?');
+            }
+        });
+
+        // --- NOVA FUNÇÃO: CALCULADORA DE METAS MENSAIS ---
+        function calcularSomaSetores() {
+            const metaLoja = converterParaNumero(document.getElementById('meta-loja').value);
+            const pan = converterParaNumero(document.getElementById('meta-pan').value);
+            const con = converterParaNumero(document.getElementById('meta-con').value);
+            const tor = converterParaNumero(document.getElementById('meta-tor').value);
+            const piz = converterParaNumero(document.getElementById('meta-piz').value);
+            const ref = converterParaNumero(document.getElementById('meta-ref').value);
+
+            const soma = pan + con + tor + piz + ref;
+            const diferenca = metaLoja - soma;
+
+            document.getElementById('soma-total').innerText = soma.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            
+            const spanStatus = document.getElementById('status-meta');
+            if (metaLoja === 0) {
+                spanStatus.innerHTML = "Aguardando meta global...";
+            } else if (diferenca === 0) {
+                spanStatus.innerHTML = `<span class="sucesso-soma">✅ Exatamente 100% distribuído!</span>`;
+            } else if (diferenca > 0) {
+                spanStatus.innerHTML = `<span class="alerta-soma">⚠️ Falta distribuir: ${diferenca.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>`;
+            } else {
+                spanStatus.innerHTML = `<span class="alerta-soma">⚠️ Passou da meta em: ${(diferenca * -1).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>`;
+            }
+        }
+
+        // --- NOVA FUNÇÃO: CALCULADORA DE METAS DIÁRIAS (SOMENTE DIAS ÚTEIS) ---
+        function obterDiasUteisDoMesFrontEnd(ano, mes) {
+            let diasNoMes = new Date(ano, mes, 0).getDate();
+            let domingos = 0;
+            for (let dia = 1; dia <= diasNoMes; dia++) {
+                let dataAtual = new Date(ano, mes - 1, dia);
+                if (dataAtual.getDay() === 0) domingos++; 
+            }
+            return diasNoMes - domingos;
+        }
+
+        function calcularMetasDiarias() {
+            const mesSelecionado = document.getElementById('mes-select').value;
+            const anoSelecionado = parseInt(document.getElementById('ano-select').value);
+
+            let diasUteis = 26; 
+            if (mesSelecionado && anoSelecionado) {
+                const mesesMap = { "JANEIRO": 1, "FEVEREIRO": 2, "MARÇO": 3, "ABRIL": 4, "MAIO": 5, "JUNHO": 6, "JULHO": 7, "AGOSTO": 8, "SETEMBRO": 9, "OUTUBRO": 10, "NOVEMBRO": 11, "DEZEMBRO": 12 };
+                let mesNum = mesesMap[mesSelecionado.toUpperCase()];
+                if(mesNum) {
+                    diasUteis = obterDiasUteisDoMesFrontEnd(anoSelecionado, mesNum);
+                }
+            }
+
+            const setores = [
+                { idMeta: 'meta-loja', idDiaria: 'diaria-loja' },
+                { idMeta: 'meta-pan', idDiaria: 'diaria-pan' },
+                { idMeta: 'meta-con', idDiaria: 'diaria-con' },
+                { idMeta: 'meta-tor', idDiaria: 'diaria-tor' },
+                { idMeta: 'meta-piz', idDiaria: 'diaria-piz' },
+                { idMeta: 'meta-ref', idDiaria: 'diaria-ref' }
+            ];
+
+            setores.forEach(setor => {
+                const valorMensal = converterParaNumero(document.getElementById(setor.idMeta).value);
+                const valorDiario = valorMensal / diasUteis;
+                document.getElementById(setor.idDiaria).innerText = `(Meta Diária: ${valorDiario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})`;
+            });
+        }
+
+        async function carregarConfiguracoes() {
+            try {
+                const res = await fetch('/api/configuracoes');
+                const config = await res.json();
+                
+                const periodoSalvo = config.mesVigente || "";
+                
+                const meses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
+                for (let m of meses) {
+                    if (periodoSalvo.toUpperCase().includes(m)) document.getElementById('mes-select').value = m;
+                }
+                const anos = ["2025", "2026", "2027", "2028", "2029", "2030"];
+                for (let a of anos) {
+                    if (periodoSalvo.includes(a)) document.getElementById('ano-select').value = a;
+                }
+                
+                let inputMetaLoja = document.getElementById('meta-loja');
+                inputMetaLoja.value = (config.metaLoja || 0).toFixed(2).replace('.', ',');
+                aplicarMascaraMoeda(inputMetaLoja);
+
+                const metasIds = { "PANIFICAÇÃO": 'meta-pan', "CONFEITARIA": 'meta-con', "TORTAS SALGADAS": 'meta-tor', "PIZZA": 'meta-piz', "REFEIÇÃO": 'meta-ref' };
+                const avariasIds = { "PANIFICAÇÃO": 'av-pan', "CONFEITARIA": 'av-con', "TORTAS SALGADAS": 'av-tor', "PIZZA": 'av-piz', "REFEIÇÃO": 'av-ref' };
+                
+                for (let setor in metasIds) {
+                    let inputMeta = document.getElementById(metasIds[setor]);
+                    inputMeta.value = config.metasMensais[setor].toFixed(2).replace('.', ',');
+                    aplicarMascaraMoeda(inputMeta);
+                    let inputAvaria = document.getElementById(avariasIds[setor]);
+                    inputAvaria.value = config.limiteAvariaKg[setor].toFixed(3).replace('.', ',');
+                    aplicarMascaraPeso(inputAvaria);
+                }
+                
+                calcularSomaSetores();
+                calcularMetasDiarias();
+
+                configuracoesIniciaisCarregadas = true;
+            } catch (erro) {
+                console.log("Erro ao carregar configurações.");
+            }
+        }
+
+        document.getElementById('form-config').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const mesEscolhido = document.getElementById('mes-select').value;
+            const anoEscolhido = document.getElementById('ano-select').value;
+            if(!mesEscolhido || !anoEscolhido) { alert("Escolha o Mês e o Ano!"); return; }
+
+            const mesVigenteMontado = `${mesEscolhido} ${anoEscolhido}`;
+
+            const novasConfigs = {
+                mesVigente: mesVigenteMontado,
+                metaLoja: converterParaNumero(document.getElementById('meta-loja').value), 
+                metasMensais: {
+                    "PANIFICAÇÃO": converterParaNumero(document.getElementById('meta-pan').value),
+                    "CONFEITARIA": converterParaNumero(document.getElementById('meta-con').value),
+                    "TORTAS SALGADAS": converterParaNumero(document.getElementById('meta-tor').value),
+                    "PIZZA": converterParaNumero(document.getElementById('meta-piz').value),
+                    "REFEIÇÃO": converterParaNumero(document.getElementById('meta-ref').value)
+                },
+                limiteAvariaKg: {
+                    "PANIFICAÇÃO": converterParaNumero(document.getElementById('av-pan').value),
+                    "CONFEITARIA": converterParaNumero(document.getElementById('av-con').value),
+                    "TORTAS SALGADAS": converterParaNumero(document.getElementById('av-tor').value),
+                    "PIZZA": converterParaNumero(document.getElementById('av-piz').value),
+                    "REFEIÇÃO": converterParaNumero(document.getElementById('av-ref').value)
+                }
+            };
+
+            try {
+                await fetch('/api/configuracoes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(novasConfigs)
+                });
+                
+                document.getElementById('mesExibicao').innerText = mesVigenteMontado;
+                prefixoDataAtual = formatarPrefixo(mesVigenteMontado);
+                
+                alert('⚙️ Metas do mês atualizadas!');
+            } catch (erro) {
+                alert('Erro ao salvar as metas.');
+            }
+        });
+    </script>
+</body>
+</html>

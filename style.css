@@ -1,0 +1,37 @@
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+body { background-color: #3b2016; color: #fdf5e6; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; }
+
+.cabecalho { text-align: center; color: #f39c12; margin-bottom: 20px; border-bottom: 2px solid #f39c12; padding-bottom: 10px; }
+
+.conteudo-principal { display: flex; gap: 20px; margin-bottom: 20px; }
+
+/* Lateral Esquerda */
+.painel-lateral { flex: 1; background-color: #5c3317; padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #f39c12; }
+.pontuacao-destaque { font-size: 50px; font-weight: bold; color: #f1c40f; margin: 15px 0; }
+.texto-xp { font-size: 24px; }
+.progresso-mensal { margin: 20px 0; }
+.faixas-conquista { text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-top: 15px; }
+.faixas-conquista p { margin-bottom: 5px; font-size: 14px; }
+
+/* Grid Direita - Setores */
+.grid-setores { flex: 3; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+.cartao-setor { background-color: #eeddcc; color: #3b2016; padding: 15px; border-radius: 8px; width: calc(33.333% - 10px); border: 2px solid #c0392b; font-size: 12px; font-weight: bold; }
+.cartao-setor.refeicao { width: calc(50% - 10px); /* Refeição fica maior no centro inferior */ }
+.cartao-setor h3 { text-align: center; margin-bottom: 10px; border-bottom: 1px solid #c0392b; padding-bottom: 5px; }
+
+/* Estilo das Barrinhas de Progresso */
+.linha-kpi { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.nome-kpi { width: 45%; }
+.barra-container { width: 40%; background-color: #dcdcdc; border-radius: 4px; height: 8px; overflow: hidden; border: 1px solid #aaa; }
+.barra-fill { background-color: #f39c12; height: 100%; transition: width 1s ease-in-out; }
+.valor-kpi { width: 15%; text-align: right; }
+
+/* Quadro Geral (Rodapé) */
+.quadro-geral { background-color: #5c3317; border: 2px solid #f39c12; border-radius: 10px; padding: 20px; }
+.quadro-geral h2 { text-align: center; color: #fdf5e6; margin-bottom: 15px; font-size: 18px; }
+.grid-geral { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 40px; }
+
+/* Barras isoladas (Progresso Mensal) */
+.barra-fundo { background-color: #3b2016; height: 15px; border-radius: 10px; border: 1px solid #f39c12; overflow: hidden; margin: 5px 0; }
+.barra-preenchimento { background-color: #f1c40f; height: 100%; width: 0%; transition: width 1s ease-in-out; }
