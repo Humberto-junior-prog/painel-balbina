@@ -19,7 +19,7 @@ function gerarLinhaKPI(nome, icone, valorAtual, valorMaximo) {
 async function carregarDadosDoServidor() {
     try {
         // Vai no endereço da nossa API
-        const resposta = await fetch('http://localhost:3000/api/placar');
+        const resposta = await fetch('/api/placar');
         // Converte aquele "textão" da tela branca em um objeto JavaScript
         const dadosDoBanco = await resposta.json();
         
