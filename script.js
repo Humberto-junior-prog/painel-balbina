@@ -1,3 +1,7 @@
+// ==========================================
+// PARTE 1: A MÁGICA DA TV (PLACAR)
+// ==========================================
+
 // 1. Definição das Metas (Pesos Máximos)
 const pesos = { vendas: 50, qualidade: 20, avaria: 15, abastecimento: 5, limpeza: 5, assiduidade: 5 };
 
@@ -18,13 +22,13 @@ function gerarLinhaKPI(nome, icone, valorAtual, valorMaximo) {
 // 3. O MOTOBOY: Função que busca os dados reais no Servidor (Back-end)
 async function carregarDadosDoServidor() {
     try {
-        // Vai no endereço da nossa API
         const resposta = await fetch('/api/placar');
-        // Converte aquele "textão" da tela branca em um objeto JavaScript
         const dadosDoBanco = await resposta.json();
         
-        // Manda desenhar a tela usando os dados que chegaram
-        atualizarPainel(dadosDoBanco);
+        // Só tenta desenhar a tela se estivermos na página da TV
+        if (document.getElementById('container-setores')) {
+            atualizarPainel(dadosDoBanco);
+        }
     } catch (erro) {
         console.log("Erro ao buscar dados do servidor. O servidor está ligado?", erro);
     }
@@ -32,23 +36,19 @@ async function carregarDadosDoServidor() {
 
 // 4. Função Principal para renderizar a tela
 function atualizarPainel(dados) {
-    // A. Atualizar o Placar Mensal na tela
     const porcentagemMensal = (dados.pontuacaoMensal / 400) * 100;
     document.getElementById('barra-mensal').style.width = `${porcentagemMensal}%`;
-    document.getElementById('xp-total').innerText = dados.pontuacaoMensal; // Muda o número grande!
+    document.getElementById('xp-total').innerText = dados.pontuacaoMensal; 
 
-    // B. Renderizar os 5 Setores e preparar a soma para a MÉDIA
     const containerSetores = document.getElementById('container-setores');
     containerSetores.innerHTML = "";
 
-    // Variáveis vazias para somarmos tudo e fazermos o Quadro Geral
     let somaVendas = 0, somaQualidade = 0, somaAvaria = 0, somaAbast = 0, somaLimp = 0, somaAssid = 0;
 
     dados.setores.forEach(setor => {
         const cExtra = setor.classeExtra ? setor.classeExtra : "";
         const p = setor.pontos;
         
-        // Somando os pontos de cada setor no nosso "carrinho"
         somaVendas += p.vendas;
         somaQualidade += p.qualidade;
         somaAvaria += p.avaria;
@@ -70,8 +70,7 @@ function atualizarPainel(dados) {
         containerSetores.innerHTML += cartaoHTML;
     });
 
-    // C. Renderizar o Quadro Geral (Calculando as MÉDIAS EXATAS automaticamente!)
-    const qtdSetores = dados.setores.length; // Sabemos que são 5
+    const qtdSetores = dados.setores.length;
     const containerGeral = document.getElementById('container-geral');
     containerGeral.innerHTML = `
         ${gerarLinhaKPI("VENDAS", "💰", (somaVendas / qtdSetores).toFixed(1), pesos.vendas)}
@@ -83,8 +82,95 @@ function atualizarPainel(dados) {
     `;
 }
 
-// 5. Inicia o painel buscando os dados assim que a tela abre
-carregarDadosDoServidor();
+// 5 e 6. Inicia o painel e fica atualizando (Só roda se for a TV)
+if (document.getElementById('container-setores')) {
+    carregarDadosDoServidor();
+    setInterval(carregarDadosDoServidor, 5000);
+}
 
-// 6. A MÁGICA DA TV: Fica atualizando sozinho a cada 5 segundos!
-setInterval(carregarDadosDoServidor, 5000);
+
+// ==========================================
+// PARTE 2: O GERENTE (CONFIGURAÇÕES E LANÇAMENTOS)
+// ==========================================
+
+// Função para Salvar Configurações (COM O LINK CORRETO DA NUVEM)
+async function salvarConfiguracoes(event) {
+    if(event) event.preventDefault();
+    
+    const novasConfigs = {
+        mesVigente: document.getElementById('mes-vigente') ? document.getElementById('mes-vigente').value : "MARÇO 2026",
+        metasMensais: {
+            "PANIFICAÇÃO": Number(document.getElementById('meta-panificacao').value),
+            "CONFEITARIA": Number(document.getElementById('meta-confeitaria').value),
+            "TORTAS SALGADAS": Number(document.getElementById('meta-tortas').value),
+            "PIZZA": Number(document.getElementById('meta-pizza').value),
+            "REFEIÇÃO": Number(document.getElementById('meta-refeicao').value)
+        },
+        limiteAvariaKg: {
+            "PANIFICAÇÃO": Number(document.getElementById('avaria-panificacao').value),
+            "CONFEITARIA": Number(document.getElementById('avaria-confeitaria').value),
+            "TORTAS SALGADAS": Number(document.getElementById('avaria-tortas').value),
+            "PIZZA": Number(document.getElementById('avaria-pizza').value),
+            "REFEIÇÃO": Number(document.getElementById('avaria-refeicao').value)
+        }
+    };
+
+    try {
+        const resposta = await fetch('/api/configuracoes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(novasConfigs)
+        });
+        const data = await resposta.json();
+        alert("Sucesso: " + data.mensagem);
+    } catch (error) {
+        alert("Erro ao salvar. Verifique sua conexão com a internet.");
+    }
+}
+
+// Função para Salvar o Lançamento Diário (COM O LINK CORRETO DA NUVEM)
+async function salvarLancamento(event) {
+    if(event) event.preventDefault();
+
+    const novoLancamento = {
+        nomeDoSetor: document.getElementById('nome-setor').value,
+        dataReferencia: document.getElementById('data-referencia').value,
+        vendasReais: Number(document.getElementById('vendas-reais').value),
+        avariaKg: Number(document.getElementById('avaria-kg').value),
+        qualidade: {
+            padrao: document.getElementById('qualidade-padrao').checked,
+            sabor: document.getElementById('qualidade-sabor').checked,
+            reclamacao: document.getElementById('qualidade-reclamacao').checked
+        },
+        abastecimentoAcertos: Number(document.getElementById('abastecimento-acertos').value),
+        limpezaQtdSim: Number(document.getElementById('limpeza-sim').value),
+        assiduidade: {
+            falta: document.getElementById('assiduidade-falta').checked,
+            atraso: document.getElementById('assiduidade-atraso').checked
+        }
+    };
+
+    try {
+        const resposta = await fetch('/api/lancamento-diario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(novoLancamento)
+        });
+        const data = await resposta.json();
+        alert("Sucesso: " + data.mensagem);
+        
+        // Limpa o formulário após salvar com sucesso
+        document.getElementById('form-lancamento').reset();
+    } catch (error) {
+        alert("Erro ao salvar. Verifique sua conexão com a internet.");
+    }
+}
+
+// Garante que os botões vão chamar as funções certas
+document.addEventListener("DOMContentLoaded", () => {
+    const formConfig = document.getElementById('form-config');
+    const formLancamento = document.getElementById('form-lancamento');
+    
+    if (formConfig) formConfig.addEventListener('submit', salvarConfiguracoes);
+    if (formLancamento) formLancamento.addEventListener('submit', salvarLancamento);
+});
