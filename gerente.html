@@ -277,8 +277,9 @@
         
         inicializarApp();
 
+        // --- ALTERAÇÃO AQUI: VITRINE ATÉ ÀS 10HRS ---
         const checklistAbastecimento = {
-            "PANIFICAÇÃO": ["Vitrine completamente abastecida até às 9hrs?", "Garantida a presença contínua de Pão Francês, Pão de Queijo e Empadão?"],
+            "PANIFICAÇÃO": ["Vitrine completamente abastecida até às 10hrs?", "Garantida a presença contínua de Pão Francês, Pão de Queijo e Empadão?"],
             "CONFEITARIA": ["Bolos Caseiros abastecidos?", "Tortas confeitadas na vitrine de exposição?", "Variedade de Doces na vitrine de exposição?"],
             "TORTAS SALGADAS": ["Mesa de exposição abastecida até às 11hrs?"],
             "PIZZA": ["Todos os sabores expostos na ilha de congelados?"],
@@ -405,7 +406,9 @@
                 });
                 if (resposta.ok) {
                     alert('✅ Dados salvos! A TV vai atualizar.');
-                    verificarDadosDoDia(); // Recarrega os dados para mostrar o que ficou salvo
+                    
+                    // --- ALTERAÇÃO AQUI: REMOVIDO O RESET() PARA O DIA NÃO VOLTAR PARA 01 ---
+                    verificarDadosDoDia(); 
                     
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
@@ -558,7 +561,7 @@
                 document.getElementById('mesExibicao').innerText = mesVigenteMontado;
                 prefixoDataAtual = formatarPrefixo(mesVigenteMontado);
                 
-                alert('⚙️ Metas do mês atualizadas!');
+                alert('⚙️ Metas do mês updated!');
             } catch (erro) {
                 alert('Erro ao salvar as metas.');
             }
