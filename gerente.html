@@ -31,6 +31,7 @@
         .alerta-soma { font-weight: bold; color: #dc3545; }
         .sucesso-soma { font-weight: bold; color: #198754; }
         .etiqueta-diaria { font-size: 12px; color: #777; font-weight: normal; margin-left: 5px; }
+        .etiqueta-acumulado { font-size: 12px; color: #555; margin-bottom: 10px; margin-top: -3px; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -120,7 +121,7 @@
         </div>
 
         <div id="tela-config" class="tela">
-            <p style="font-size: 13px; color: #666;">Altere aqui as metas oficias.</p>
+            <p style="font-size: 13px; color: #666;">Altere as metas e acompanhe os acumulados do mês.</p>
             <form id="form-config">
                 <div class="card-secao">
                     <h4>📅 Período do Painel</h4>
@@ -158,6 +159,7 @@
                     
                     <label style="color: #0d6efd;">Meta Global da Padaria: <span id="diaria-loja" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
                     <input type="text" id="meta-loja" class="input-destaque" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    <div id="acumulado-venda-loja" class="etiqueta-acumulado" style="font-size: 14px;"></div>
                     
                     <div class="painel-resumo">
                         Soma dos Setores: <strong id="soma-total">R$ 0,00</strong><br>
@@ -166,27 +168,47 @@
 
                     <label>Panificação: <span id="diaria-pan" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
                     <input type="text" id="meta-pan" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    <div id="acumulado-venda-pan" class="etiqueta-acumulado"></div>
                     
                     <label>Confeitaria: <span id="diaria-con" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
                     <input type="text" id="meta-con" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    <div id="acumulado-venda-con" class="etiqueta-acumulado"></div>
                     
                     <label>Tortas Salgadas: <span id="diaria-tor" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
                     <input type="text" id="meta-tor" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    <div id="acumulado-venda-tor" class="etiqueta-acumulado"></div>
                     
                     <label>Pizza: <span id="diaria-piz" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
                     <input type="text" id="meta-piz" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    <div id="acumulado-venda-piz" class="etiqueta-acumulado"></div>
                     
                     <label>Refeição: <span id="diaria-ref" class="etiqueta-diaria">(Meta Diária: R$ 0,00)</span></label>
                     <input type="text" id="meta-ref" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularSomaSetores(); calcularMetasDiarias()" required>
+                    <div id="acumulado-venda-ref" class="etiqueta-acumulado"></div>
                 </div>
 
                 <div class="card-secao">
                     <h4>🗑️ Limite Diário de Avaria (KG)</h4>
-                    <label>Panificação:</label><input type="text" id="av-pan" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
-                    <label>Confeitaria:</label><input type="text" id="av-con" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
-                    <label>Tortas Salgadas:</label><input type="text" id="av-tor" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
-                    <label>Pizza:</label><input type="text" id="av-piz" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
-                    <label>Refeição:</label><input type="text" id="av-ref" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    
+                    <label>Panificação:</label>
+                    <input type="text" id="av-pan" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    <div id="acumulado-avaria-pan" class="etiqueta-acumulado"></div>
+                    
+                    <label>Confeitaria:</label>
+                    <input type="text" id="av-con" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    <div id="acumulado-avaria-con" class="etiqueta-acumulado"></div>
+                    
+                    <label>Tortas Salgadas:</label>
+                    <input type="text" id="av-tor" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    <div id="acumulado-avaria-tor" class="etiqueta-acumulado"></div>
+                    
+                    <label>Pizza:</label>
+                    <input type="text" id="av-piz" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    <div id="acumulado-avaria-piz" class="etiqueta-acumulado"></div>
+                    
+                    <label>Refeição:</label>
+                    <input type="text" id="av-ref" placeholder="0,000" oninput="aplicarMascaraPeso(this)" required>
+                    <div id="acumulado-avaria-ref" class="etiqueta-acumulado"></div>
                 </div>
                 <button type="submit" class="btn-salvar">💾 Salvar Novas Metas</button>
             </form>
@@ -237,24 +259,16 @@
             const texto = String(mesVigente).toUpperCase();
             let mesNum = "";
             
-            if (texto.includes("JANEIRO")) mesNum = "01";
-            else if (texto.includes("FEVEREIRO")) mesNum = "02";
-            else if (texto.includes("MARÇO") || texto.includes("MARCO")) mesNum = "03";
-            else if (texto.includes("ABRIL")) mesNum = "04";
-            else if (texto.includes("MAIO")) mesNum = "05";
-            else if (texto.includes("JUNHO")) mesNum = "06";
-            else if (texto.includes("JULHO")) mesNum = "07";
-            else if (texto.includes("AGOSTO")) mesNum = "08";
-            else if (texto.includes("SETEMBRO")) mesNum = "09";
-            else if (texto.includes("OUTUBRO")) mesNum = "10";
-            else if (texto.includes("NOVEMBRO")) mesNum = "11";
-            else if (texto.includes("DEZEMBRO")) mesNum = "12";
+            if (texto.includes("JANEIRO")) mesNum = "01"; else if (texto.includes("FEVEREIRO")) mesNum = "02";
+            else if (texto.includes("MARÇO") || texto.includes("MARCO")) mesNum = "03"; else if (texto.includes("ABRIL")) mesNum = "04";
+            else if (texto.includes("MAIO")) mesNum = "05"; else if (texto.includes("JUNHO")) mesNum = "06";
+            else if (texto.includes("JULHO")) mesNum = "07"; else if (texto.includes("AGOSTO")) mesNum = "08";
+            else if (texto.includes("SETEMBRO")) mesNum = "09"; else if (texto.includes("OUTUBRO")) mesNum = "10";
+            else if (texto.includes("NOVEMBRO")) mesNum = "11"; else if (texto.includes("DEZEMBRO")) mesNum = "12";
             
             let anoNum = "";
             const anos = ["2025", "2026", "2027", "2028", "2029", "2030"];
-            for (let a of anos) {
-                if (texto.includes(a)) { anoNum = a; break; }
-            }
+            for (let a of anos) { if (texto.includes(a)) { anoNum = a; break; } }
             
             if (mesNum && anoNum) return `${anoNum}-${mesNum}`;
             return "";
@@ -277,7 +291,6 @@
         
         inicializarApp();
 
-        // --- ALTERAÇÃO AQUI: VITRINE ATÉ ÀS 10HRS ---
         const checklistAbastecimento = {
             "PANIFICAÇÃO": ["Vitrine completamente abastecida até às 10hrs?", "Garantida a presença contínua de Pão Francês, Pão de Queijo e Empadão?"],
             "CONFEITARIA": ["Bolos Caseiros abastecidos?", "Tortas confeitadas na vitrine de exposição?", "Variedade de Doces na vitrine de exposição?"],
@@ -406,10 +419,7 @@
                 });
                 if (resposta.ok) {
                     alert('✅ Dados salvos! A TV vai atualizar.');
-                    
-                    // --- ALTERAÇÃO AQUI: REMOVIDO O RESET() PARA O DIA NÃO VOLTAR PARA 01 ---
                     verificarDadosDoDia(); 
-                    
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             } catch (erro) {
@@ -443,7 +453,7 @@
             }
         }
 
-        // --- CALCULADORA DE METAS DIÁRIAS (SOMENTE DIAS ÚTEIS) ---
+        // --- CALCULADORA DE METAS DIÁRIAS ---
         function obterDiasUteisDoMesFrontEnd(ano, mes) {
             let diasNoMes = new Date(ano, mes, 0).getDate();
             let domingos = 0;
@@ -483,6 +493,7 @@
             });
         }
 
+        // CARREGA METAS E OS ACUMULADOS DA TV
         async function carregarConfiguracoes() {
             try {
                 const res = await fetch('/api/configuracoes');
@@ -517,6 +528,41 @@
                 
                 calcularSomaSetores();
                 calcularMetasDiarias();
+
+                // --- NOVO: BUSCANDO OS ACUMULADOS ---
+                try {
+                    const resPlacar = await fetch('/api/placar');
+                    const placar = await resPlacar.json();
+                    
+                    if (placar && placar.setores) {
+                        const metaLojaVal = converterParaNumero(document.getElementById('meta-loja').value);
+                        const pctLoja = metaLojaVal > 0 ? ((placar.acumuladoLoja.vendas / metaLojaVal) * 100).toFixed(1) : 0;
+                        let corLoja = pctLoja >= 100 ? "#198754" : "#555";
+                        document.getElementById('acumulado-venda-loja').innerHTML = `📈 Acumulado Real: <span style="color: ${corLoja}"><strong>${placar.acumuladoLoja.vendas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong> (${pctLoja}%)</span>`;
+
+                        const mapaSet = {
+                            "PANIFICAÇÃO": { vId: "acumulado-venda-pan", aId: "acumulado-avaria-pan", iMeta: "meta-pan" },
+                            "CONFEITARIA": { vId: "acumulado-venda-con", aId: "acumulado-avaria-con", iMeta: "meta-con" },
+                            "TORTAS SALGADAS": { vId: "acumulado-venda-tor", aId: "acumulado-avaria-tor", iMeta: "meta-tor" },
+                            "PIZZA": { vId: "acumulado-venda-piz", aId: "acumulado-avaria-piz", iMeta: "meta-piz" },
+                            "REFEIÇÃO": { vId: "acumulado-venda-ref", aId: "acumulado-avaria-ref", iMeta: "meta-ref" }
+                        };
+
+                        placar.setores.forEach(setor => {
+                            const map = mapaSet[setor.nome];
+                            if (map) {
+                                const metaSetor = converterParaNumero(document.getElementById(map.iMeta).value);
+                                const pctVenda = metaSetor > 0 ? ((setor.acumulado.vendas / metaSetor) * 100).toFixed(1) : 0;
+                                let corVenda = pctVenda >= 100 ? "#198754" : "#555";
+                                
+                                document.getElementById(map.vId).innerHTML = `📈 Acumulado: <span style="color: ${corVenda}"><strong>${setor.acumulado.vendas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong> (${pctVenda}%)</span>`;
+                                document.getElementById(map.aId).innerHTML = `🗑️ Total do Mês: <strong>${setor.acumulado.avaria.toFixed(3).replace('.', ',')} Kg</strong>`;
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.log("Sem lançamentos ainda para mostrar o acumulado.");
+                }
 
                 configuracoesIniciaisCarregadas = true;
             } catch (erro) {
@@ -561,7 +607,10 @@
                 document.getElementById('mesExibicao').innerText = mesVigenteMontado;
                 prefixoDataAtual = formatarPrefixo(mesVigenteMontado);
                 
-                alert('⚙️ Metas do mês updated!');
+                alert('⚙️ Metas do mês atualizadas!');
+                configuracoesIniciaisCarregadas = false; // Força recarregar os acumulados atualizados
+                carregarConfiguracoes();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } catch (erro) {
                 alert('Erro ao salvar as metas.');
             }
