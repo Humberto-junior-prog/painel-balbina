@@ -1,5 +1,5 @@
 // ==========================================
-// PARTE 1: A MÁGICA DA TV (PLACAR)
+// A MÁGICA DA TV (PLACAR)
 // ==========================================
 
 // 1. Definição das Metas (Pesos Máximos)
@@ -87,90 +87,3 @@ if (document.getElementById('container-setores')) {
     carregarDadosDoServidor();
     setInterval(carregarDadosDoServidor, 5000);
 }
-
-
-// ==========================================
-// PARTE 2: O GERENTE (CONFIGURAÇÕES E LANÇAMENTOS)
-// ==========================================
-
-// Função para Salvar Configurações (COM O LINK CORRETO DA NUVEM)
-async function salvarConfiguracoes(event) {
-    if(event) event.preventDefault();
-    
-    const novasConfigs = {
-        mesVigente: document.getElementById('mes-vigente') ? document.getElementById('mes-vigente').value : "MARÇO 2026",
-        metasMensais: {
-            "PANIFICAÇÃO": Number(document.getElementById('meta-panificacao').value),
-            "CONFEITARIA": Number(document.getElementById('meta-confeitaria').value),
-            "TORTAS SALGADAS": Number(document.getElementById('meta-tortas').value),
-            "PIZZA": Number(document.getElementById('meta-pizza').value),
-            "REFEIÇÃO": Number(document.getElementById('meta-refeicao').value)
-        },
-        limiteAvariaKg: {
-            "PANIFICAÇÃO": Number(document.getElementById('avaria-panificacao').value),
-            "CONFEITARIA": Number(document.getElementById('avaria-confeitaria').value),
-            "TORTAS SALGADAS": Number(document.getElementById('avaria-tortas').value),
-            "PIZZA": Number(document.getElementById('avaria-pizza').value),
-            "REFEIÇÃO": Number(document.getElementById('avaria-refeicao').value)
-        }
-    };
-
-    try {
-        const resposta = await fetch('/api/configuracoes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(novasConfigs)
-        });
-        const data = await resposta.json();
-        alert("Sucesso: " + data.mensagem);
-    } catch (error) {
-        alert("Erro ao salvar. Verifique sua conexão com a internet.");
-    }
-}
-
-// Função para Salvar o Lançamento Diário (COM O LINK CORRETO DA NUVEM)
-async function salvarLancamento(event) {
-    if(event) event.preventDefault();
-
-    const novoLancamento = {
-        nomeDoSetor: document.getElementById('nome-setor').value,
-        dataReferencia: document.getElementById('data-referencia').value,
-        vendasReais: Number(document.getElementById('vendas-reais').value),
-        avariaKg: Number(document.getElementById('avaria-kg').value),
-        qualidade: {
-            padrao: document.getElementById('qualidade-padrao').checked,
-            sabor: document.getElementById('qualidade-sabor').checked,
-            reclamacao: document.getElementById('qualidade-reclamacao').checked
-        },
-        abastecimentoAcertos: Number(document.getElementById('abastecimento-acertos').value),
-        limpezaQtdSim: Number(document.getElementById('limpeza-sim').value),
-        assiduidade: {
-            falta: document.getElementById('assiduidade-falta').checked,
-            atraso: document.getElementById('assiduidade-atraso').checked
-        }
-    };
-
-    try {
-        const resposta = await fetch('/api/lancamento-diario', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(novoLancamento)
-        });
-        const data = await resposta.json();
-        alert("Sucesso: " + data.mensagem);
-        
-        // Limpa o formulário após salvar com sucesso
-        document.getElementById('form-lancamento').reset();
-    } catch (error) {
-        alert("Erro ao salvar. Verifique sua conexão com a internet.");
-    }
-}
-
-// Garante que os botões vão chamar as funções certas
-document.addEventListener("DOMContentLoaded", () => {
-    const formConfig = document.getElementById('form-config');
-    const formLancamento = document.getElementById('form-lancamento');
-    
-    if (formConfig) formConfig.addEventListener('submit', salvarConfiguracoes);
-    if (formLancamento) formLancamento.addEventListener('submit', salvarLancamento);
-});
