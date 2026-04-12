@@ -405,8 +405,7 @@
                 });
                 if (resposta.ok) {
                     alert('✅ Dados salvos! A TV vai atualizar.');
-                    document.getElementById('form-diario').reset();
-                    verificarDadosDoDia(); 
+                    verificarDadosDoDia(); // Recarrega os dados para mostrar o que ficou salvo
                     
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
