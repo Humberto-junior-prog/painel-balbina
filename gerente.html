@@ -281,34 +281,6 @@
             return "";
         }
 
-        // --- NOVO: FUNÇÃO PARA MOSTRAR OS DIAS DA SEMANA NA LISTA ---
-        function atualizarNomesDosDias() {
-            if (!prefixoDataAtual) return;
-            const partes = prefixoDataAtual.split("-");
-            const ano = parseInt(partes);
-            const mes = parseInt(partes);
-            const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-
-            const selectDia = document.getElementById('diaRef');
-            for (let i = 0; i < selectDia.options.length; i++) {
-                let diaNum = i + 1; // De 1 a 31
-                let data = new Date(ano, mes - 1, diaNum);
-
-                if (data.getMonth() === mes - 1) { // Verifica se o dia existe no mês (ex: 30 de fev não existe)
-                    let nomeDia = diasDaSemana[data.getDay()];
-                    let diaStr = String(diaNum).padStart(2, '0');
-                    selectDia.options[i].text = `${diaStr} - ${nomeDia}`;
-                    selectDia.options[i].disabled = false;
-                    selectDia.options[i].style.display = 'block';
-                } else {
-                    let diaStr = String(diaNum).padStart(2, '0');
-                    selectDia.options[i].text = `${diaStr} - (Inválido)`;
-                    selectDia.options[i].disabled = true;
-                    selectDia.options[i].style.display = 'none';
-                }
-            }
-        }
-
         async function inicializarApp() {
             try {
                 const res = await fetch('/api/configuracoes');
@@ -318,7 +290,6 @@
                 document.getElementById('mesExibicao').innerText = mesOficial;
                 prefixoDataAtual = formatarPrefixo(mesOficial);
                 
-                atualizarNomesDosDias(); // Preenche os dias da semana
                 verificarDadosDoDia(); 
             } catch (erro) {
                 console.log("Aguardando servidor...");
@@ -327,7 +298,7 @@
         
         inicializarApp();
 
-        // --- NOVO: FUNÇÃO PARA DESATIVAR O FORMULÁRIO QUANDO FOR INATIVO ---
+        // FUNÇÃO PARA DESATIVAR O FORMULÁRIO QUANDO FOR INATIVO
         function alternarInativo() {
             const inativo = document.getElementById('inativoChk').checked;
             const secoes = document.querySelectorAll('.dados-lancamento');
@@ -661,8 +632,6 @@
                 
                 document.getElementById('mesExibicao').innerText = mesVigenteMontado;
                 prefixoDataAtual = formatarPrefixo(mesVigenteMontado);
-                
-                atualizarNomesDosDias(); // NOVO: Reatualiza os dias se trocar de mês
                 
                 alert('⚙️ Metas do mês atualizadas!');
                 configuracoesIniciaisCarregadas = false; 
