@@ -103,7 +103,7 @@ app.get('/api/consulta-dia/:setor/:data', async (req, res) => {
     res.json(registro || null);
 });
 
-// A ROTA DO PLACAR COM OS ACUMULADOS E A REGRA DOS DIAS INATIVOS
+// A ROTA DO PLACAR (COM PROTEÇÃO CONTRA DOMINGOS INATIVOS)
 app.get('/api/placar', async (req, res) => {
     const configuracoes = await configCollection.findOne({ id: "geral" });
     if (!configuracoes) return res.json({ erro: "Configurações não carregadas" });
@@ -141,9 +141,23 @@ app.get('/api/placar', async (req, res) => {
         let somaVendas = 0;
         let somaAvaria = 0;
 
-        // Cálculo Dinâmico de Dias Úteis do Setor (Ignorando inativos)
-        let diasInativos = lancamentosDoSetor.filter(l => l.inativo).length;
-        let diasUteisSetor = Math.max(1, diasUteisPadrao - diasInativos); 
+        // --- NOVO: CÁLCULO BLINDADO DE DIAS INATIVOS ---
+        let diasInativosReais = 0;
+        lancamentosDoSetor.forEach(l => {
+            if (l.inativo && l.dataReferencia) {
+                const partes = l.dataReferencia.split("-");
+                if (partes.length === 3) {
+                    // Monta a data para verificar o dia da semana
+                    const dataDoLancamento = new Date(parseInt(partes), parseInt(partes) - 1, parseInt(partes));
+                    // 0 é Domingo. Só conta como inativo se for de Segunda a Sábado.
+                    if (dataDoLancamento.getDay() !== 0) {
+                        diasInativosReais++;
+                    }
+                }
+            }
+        });
+
+        let diasUteisSetor = Math.max(1, diasUteisPadrao - diasInativosReais); 
 
         const maxDiaQualidade = maxPts.qualidade / diasUteisSetor;
         const maxDiaAvaria = maxPts.avaria / diasUteisSetor;
@@ -152,7 +166,7 @@ app.get('/api/placar', async (req, res) => {
         const maxDiaAssid = maxPts.assiduidade / diasUteisSetor;
 
         lancamentosDoSetor.forEach(lancamento => {
-            if (lancamento.inativo) return; // Se não teve operação, ignora o dia
+            if (lancamento.inativo) return; // Se não teve operação, ignora as pontuações do dia
 
             somaVendas += (lancamento.vendasReais || 0);
             somaAvaria += (lancamento.avariaKg || 0);
