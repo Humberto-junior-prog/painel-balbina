@@ -1,9 +1,9 @@
 // ==========================================
-// A MÁGICA DA TV (PLACAR)
+// A MÁGICA DA TV (PLACAR) - ESCALA 1000 PTS
 // ==========================================
 
-// 1. Definição das Metas (Pesos Máximos)
-const pesos = { vendas: 50, qualidade: 20, avaria: 15, abastecimento: 5, limpeza: 5, assiduidade: 5 };
+// 1. Definição das Metas (Pesos Máximos Atualizados)
+const pesos = { vendas: 500, qualidade: 200, avaria: 150, abastecimento: 50, limpeza: 50, assiduidade: 50 };
 
 // 2. Função para gerar uma linha com a barrinha de progresso
 function gerarLinhaKPI(nome, icone, valorAtual, valorMaximo) {
@@ -19,13 +19,12 @@ function gerarLinhaKPI(nome, icone, valorAtual, valorMaximo) {
     `;
 }
 
-// 3. O MOTOBOY: Função que busca os dados reais no Servidor (Back-end)
+// 3. O MOTOBOY: Função que busca os dados reais no Servidor
 async function carregarDadosDoServidor() {
     try {
         const resposta = await fetch('/api/placar');
         const dadosDoBanco = await resposta.json();
         
-        // Só tenta desenhar a tela se estivermos na página da TV
         if (document.getElementById('container-setores')) {
             atualizarPainel(dadosDoBanco);
         }
@@ -36,7 +35,8 @@ async function carregarDadosDoServidor() {
 
 // 4. Função Principal para renderizar a tela
 function atualizarPainel(dados) {
-    const porcentagemMensal = (dados.pontuacaoMensal / 400) * 100;
+    // --- ATUALIZADO PARA 1000 PONTOS NA BARRA GLOBAL ---
+    const porcentagemMensal = (dados.pontuacaoMensal / 1000) * 100;
     document.getElementById('barra-mensal').style.width = `${porcentagemMensal}%`;
     document.getElementById('xp-total').innerText = dados.pontuacaoMensal; 
 
