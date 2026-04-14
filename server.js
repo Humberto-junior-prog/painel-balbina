@@ -103,7 +103,7 @@ app.get('/api/consulta-dia/:setor/:data', async (req, res) => {
     res.json(registro || null);
 });
 
-// A ROTA DO PLACAR (COM PROTEÇÃO CONTRA DOMINGOS INATIVOS)
+// A ROTA DO PLACAR (COM NOVA ESCALA DE 1.000 PONTOS)
 app.get('/api/placar', async (req, res) => {
     const configuracoes = await configCollection.findOne({ id: "geral" });
     if (!configuracoes) return res.json({ erro: "Configurações não carregadas" });
@@ -127,7 +127,9 @@ app.get('/api/placar', async (req, res) => {
 
     const infoMes = obterDiasUteisDoMes(anoCalculo, mesCalculo);
     const diasUteisPadrao = infoMes.diasUteis || 26; 
-    const maxPts = { vendas: 200, qualidade: 80, avaria: 60, abastecimento: 20, limpeza: 20, assiduidade: 20 };
+    
+    // --- NOVA ESCALA DE 1.000 PONTOS (50%, 20%, 15%, 5%, 5%, 5%) ---
+    const maxPts = { vendas: 500, qualidade: 200, avaria: 150, abastecimento: 50, limpeza: 50, assiduidade: 50 };
     
     let pontuacaoTotalLoja = 0;
     const nomesSetores = ["PANIFICAÇÃO", "CONFEITARIA", "TORTAS SALGADAS", "PIZZA", "REFEIÇÃO"];
@@ -141,15 +143,12 @@ app.get('/api/placar', async (req, res) => {
         let somaVendas = 0;
         let somaAvaria = 0;
 
-        // --- NOVO: CÁLCULO BLINDADO DE DIAS INATIVOS ---
         let diasInativosReais = 0;
         lancamentosDoSetor.forEach(l => {
             if (l.inativo && l.dataReferencia) {
                 const partes = l.dataReferencia.split("-");
                 if (partes.length === 3) {
-                    // Monta a data para verificar o dia da semana
                     const dataDoLancamento = new Date(parseInt(partes), parseInt(partes) - 1, parseInt(partes));
-                    // 0 é Domingo. Só conta como inativo se for de Segunda a Sábado.
                     if (dataDoLancamento.getDay() !== 0) {
                         diasInativosReais++;
                     }
@@ -166,7 +165,7 @@ app.get('/api/placar', async (req, res) => {
         const maxDiaAssid = maxPts.assiduidade / diasUteisSetor;
 
         lancamentosDoSetor.forEach(lancamento => {
-            if (lancamento.inativo) return; // Se não teve operação, ignora as pontuações do dia
+            if (lancamento.inativo) return; 
 
             somaVendas += (lancamento.vendasReais || 0);
             somaAvaria += (lancamento.avariaKg || 0);
