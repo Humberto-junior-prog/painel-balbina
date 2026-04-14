@@ -13,7 +13,7 @@
         .btn-aba.ativo { background-color: #d35400; color: white; }
         .tela { display: none; }
         .tela.ativa { display: block; }
-        .card-secao { background-color: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .card-secao { background-color: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 15px; transition: 0.3s; }
         .card-secao h4 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
         label { display: block; font-weight: 600; margin-top: 10px; font-size: 14px; }
         select, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
@@ -31,6 +31,8 @@
         .alerta-soma { font-weight: bold; color: #dc3545; }
         .sucesso-soma { font-weight: bold; color: #198754; }
         .etiqueta-diaria { font-size: 12px; color: #777; font-weight: normal; margin-left: 5px; }
+        
+        /* A margem ajustada do CSS */
         .etiqueta-acumulado { font-size: 12px; color: #555; margin-top: 4px; margin-bottom: 15px; margin-left: 5px; font-weight: 500; }
     </style>
 </head>
@@ -72,9 +74,14 @@
                         <button type="button" class="btn-setor" onclick="selecionarSetor('REFEIÇÃO', this)">🍲 Refeição</button>
                     </div>
                     <input type="hidden" id="setor" value="PANIFICAÇÃO">
+
+                    <label style="margin-top: 15px; display: flex; align-items: center; gap: 8px; color: #d35400; font-weight: bold; background: #fff3cd; padding: 10px; border-radius: 6px; border: 1px solid #ffc107; cursor: pointer;">
+                        <input type="checkbox" id="inativoChk" onchange="alternarInativo()" style="width: 20px; height: 20px; margin: 0;">
+                        Sem operação neste dia (Setor Fechado)
+                    </label>
                 </div>
 
-                <div class="card-secao">
+                <div class="card-secao dados-lancamento">
                     <h4>💰 1. Vendas e 🗑️ 2. Quebras</h4>
                     <label>Valor Vendido em R$:</label>
                     <input type="text" id="vendaDia" placeholder="0,00" oninput="aplicarMascaraMoeda(this)">
@@ -83,7 +90,7 @@
                     <input type="text" id="avariaDia" placeholder="0,000" oninput="aplicarMascaraPeso(this)">
                 </div>
 
-                <div class="card-secao">
+                <div class="card-secao dados-lancamento">
                     <h4>⭐ 3. Qualidade do Produto</h4>
                     <label>Produtos padronizados (tamanho/cor/recheio)?</label>
                     <select id="qualPadr"><option value="">-- Aguardando Avaliação --</option><option value="sim">Sim</option><option value="nao">Não</option></select>
@@ -93,12 +100,12 @@
                     <select id="qualReclamacao"><option value="">-- Aguardando Avaliação --</option><option value="nao">Não</option><option value="sim">Sim (Zera o dia)</option></select>
                 </div>
 
-                <div class="card-secao">
+                <div class="card-secao dados-lancamento">
                     <h4>🕒 4. Abastecimento</h4>
                     <div id="perguntas-abastecimento"></div>
                 </div>
 
-                <div class="card-secao">
+                <div class="card-secao dados-lancamento">
                     <h4>🧹 5. Organização e Limpeza</h4>
                     <label>Bancadas limpas e organizadas?</label>
                     <select class="limpeza-chk" id="limpBancada"><option value="">-- Aguardando Avaliação --</option><option value="sim">Sim</option><option value="nao">Não</option></select>
@@ -108,7 +115,7 @@
                     <select class="limpeza-chk" id="limpForma"><option value="">-- Aguardando Avaliação --</option><option value="sim">Sim</option><option value="nao">Não</option></select>
                 </div>
 
-                <div class="card-secao">
+                <div class="card-secao dados-lancamento">
                     <h4>👤 6. Assiduidade da Equipe</h4>
                     <label>Houve alguma FALTA INJUSTIFICADA?</label>
                     <select id="assidFalta"><option value="">-- Aguardando Avaliação --</option><option value="nao">Não</option><option value="sim">Sim (Zera o dia)</option></select>
@@ -274,6 +281,34 @@
             return "";
         }
 
+        // --- NOVO: FUNÇÃO PARA MOSTRAR OS DIAS DA SEMANA NA LISTA ---
+        function atualizarNomesDosDias() {
+            if (!prefixoDataAtual) return;
+            const partes = prefixoDataAtual.split("-");
+            const ano = parseInt(partes);
+            const mes = parseInt(partes);
+            const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+
+            const selectDia = document.getElementById('diaRef');
+            for (let i = 0; i < selectDia.options.length; i++) {
+                let diaNum = i + 1; // De 1 a 31
+                let data = new Date(ano, mes - 1, diaNum);
+
+                if (data.getMonth() === mes - 1) { // Verifica se o dia existe no mês (ex: 30 de fev não existe)
+                    let nomeDia = diasDaSemana[data.getDay()];
+                    let diaStr = String(diaNum).padStart(2, '0');
+                    selectDia.options[i].text = `${diaStr} - ${nomeDia}`;
+                    selectDia.options[i].disabled = false;
+                    selectDia.options[i].style.display = 'block';
+                } else {
+                    let diaStr = String(diaNum).padStart(2, '0');
+                    selectDia.options[i].text = `${diaStr} - (Inválido)`;
+                    selectDia.options[i].disabled = true;
+                    selectDia.options[i].style.display = 'none';
+                }
+            }
+        }
+
         async function inicializarApp() {
             try {
                 const res = await fetch('/api/configuracoes');
@@ -283,6 +318,7 @@
                 document.getElementById('mesExibicao').innerText = mesOficial;
                 prefixoDataAtual = formatarPrefixo(mesOficial);
                 
+                atualizarNomesDosDias(); // Preenche os dias da semana
                 verificarDadosDoDia(); 
             } catch (erro) {
                 console.log("Aguardando servidor...");
@@ -290,6 +326,16 @@
         }
         
         inicializarApp();
+
+        // --- NOVO: FUNÇÃO PARA DESATIVAR O FORMULÁRIO QUANDO FOR INATIVO ---
+        function alternarInativo() {
+            const inativo = document.getElementById('inativoChk').checked;
+            const secoes = document.querySelectorAll('.dados-lancamento');
+            secoes.forEach(secao => {
+                secao.style.opacity = inativo ? "0.4" : "1";
+                secao.style.pointerEvents = inativo ? "none" : "auto";
+            });
+        }
 
         const checklistAbastecimento = {
             "PANIFICAÇÃO": ["Vitrine completamente abastecida até às 10hrs?", "Garantida a presença contínua de Pão Francês, Pão de Queijo e Empadão?"],
@@ -324,6 +370,9 @@
                 const dadosAntigos = await resposta.json();
 
                 if (dadosAntigos) {
+                    // Restaura a flag de inativo
+                    document.getElementById('inativoChk').checked = dadosAntigos.inativo === true;
+
                     if (dadosAntigos.vendasReais !== undefined) {
                         document.getElementById('vendaDia').value = (dadosAntigos.vendasReais).toFixed(2).replace('.', ',');
                         aplicarMascaraMoeda(document.getElementById('vendaDia'));
@@ -352,6 +401,7 @@
                         document.getElementById('assidAtraso').value = "";
                     }
                 } else {
+                    document.getElementById('inativoChk').checked = false;
                     document.getElementById('vendaDia').value = "";
                     document.getElementById('avariaDia').value = "";
                     document.getElementById('qualPadr').value = "";
@@ -360,6 +410,9 @@
                     document.getElementById('assidFalta').value = "";
                     document.getElementById('assidAtraso').value = "";
                 }
+                
+                alternarInativo(); // Aplica o visual se estiver fechado
+
             } catch (erro) {
                 console.log("Servidor não respondeu a consulta");
             }
@@ -372,44 +425,48 @@
 
             const pacote = {
                 nomeDoSetor: document.getElementById('setor').value,
-                dataReferencia: dataFinalParaSalvar
+                dataReferencia: dataFinalParaSalvar,
+                inativo: document.getElementById('inativoChk').checked
             };
 
-            const valVenda = document.getElementById('vendaDia').value;
-            if (valVenda !== "") pacote.vendasReais = converterParaNumero(valVenda);
+            // Se for inativo, envia apenas a flag. Se for ativo, anexa os números.
+            if (!pacote.inativo) {
+                const valVenda = document.getElementById('vendaDia').value;
+                if (valVenda !== "") pacote.vendasReais = converterParaNumero(valVenda);
 
-            const valAvaria = document.getElementById('avariaDia').value;
-            if (valAvaria !== "") pacote.avariaKg = converterParaNumero(valAvaria);
+                const valAvaria = document.getElementById('avariaDia').value;
+                if (valAvaria !== "") pacote.avariaKg = converterParaNumero(valAvaria);
 
-            const qPadr = document.getElementById('qualPadr').value;
-            const qSabor = document.getElementById('qualSabor').value;
-            const qRecl = document.getElementById('qualReclamacao').value;
-            if (qPadr !== "" || qSabor !== "" || qRecl !== "") {
-                pacote.qualidade = {};
-                if (qPadr !== "") pacote.qualidade.padrao = (qPadr === 'sim');
-                if (qSabor !== "") pacote.qualidade.sabor = (qSabor === 'sim');
-                if (qRecl !== "") pacote.qualidade.reclamacao = (qRecl === 'sim');
+                const qPadr = document.getElementById('qualPadr').value;
+                const qSabor = document.getElementById('qualSabor').value;
+                const qRecl = document.getElementById('qualReclamacao').value;
+                if (qPadr !== "" || qSabor !== "" || qRecl !== "") {
+                    pacote.qualidade = {};
+                    if (qPadr !== "") pacote.qualidade.padrao = (qPadr === 'sim');
+                    if (qSabor !== "") pacote.qualidade.sabor = (qSabor === 'sim');
+                    if (qRecl !== "") pacote.qualidade.reclamacao = (qRecl === 'sim');
+                }
+
+                const aFalta = document.getElementById('assidFalta').value;
+                const aAtraso = document.getElementById('assidAtraso').value;
+                if (aFalta !== "" || aAtraso !== "") {
+                    pacote.assiduidade = {};
+                    if (aFalta !== "") pacote.assiduidade.falta = (aFalta === 'sim');
+                    if (aAtraso !== "") pacote.assiduidade.atraso = (aAtraso === 'sim');
+                }
+
+                let acertosAbast = 0, respAbast = 0;
+                document.querySelectorAll('.abast-chk').forEach(s => { 
+                    if(s.value !== "") { respAbast++; if(s.value === 'sim') acertosAbast++; }
+                });
+                if (respAbast > 0) pacote.abastecimentoAcertos = (acertosAbast / respAbast);
+
+                let acertosLimp = 0, respLimp = false;
+                document.querySelectorAll('.limpeza-chk').forEach(s => { 
+                    if(s.value !== "") { respLimp = true; if(s.value === 'sim') acertosLimp++; }
+                });
+                if (respLimp) pacote.limpezaQtdSim = acertosLimp;
             }
-
-            const aFalta = document.getElementById('assidFalta').value;
-            const aAtraso = document.getElementById('assidAtraso').value;
-            if (aFalta !== "" || aAtraso !== "") {
-                pacote.assiduidade = {};
-                if (aFalta !== "") pacote.assiduidade.falta = (aFalta === 'sim');
-                if (aAtraso !== "") pacote.assiduidade.atraso = (aAtraso === 'sim');
-            }
-
-            let acertosAbast = 0, respAbast = 0;
-            document.querySelectorAll('.abast-chk').forEach(s => { 
-                if(s.value !== "") { respAbast++; if(s.value === 'sim') acertosAbast++; }
-            });
-            if (respAbast > 0) pacote.abastecimentoAcertos = (acertosAbast / respAbast);
-
-            let acertosLimp = 0, respLimp = false;
-            document.querySelectorAll('.limpeza-chk').forEach(s => { 
-                if(s.value !== "") { respLimp = true; if(s.value === 'sim') acertosLimp++; }
-            });
-            if (respLimp) pacote.limpezaQtdSim = acertosLimp;
 
             try {
                 const resposta = await fetch('/api/lancamento-diario', {
@@ -493,7 +550,6 @@
             });
         }
 
-        // CARREGA METAS E OS ACUMULADOS DA TV
         async function carregarConfiguracoes() {
             try {
                 const res = await fetch('/api/configuracoes');
@@ -529,7 +585,6 @@
                 calcularSomaSetores();
                 calcularMetasDiarias();
 
-                // --- NOVO: BUSCANDO OS ACUMULADOS ---
                 try {
                     const resPlacar = await fetch('/api/placar');
                     const placar = await resPlacar.json();
@@ -607,8 +662,10 @@
                 document.getElementById('mesExibicao').innerText = mesVigenteMontado;
                 prefixoDataAtual = formatarPrefixo(mesVigenteMontado);
                 
+                atualizarNomesDosDias(); // NOVO: Reatualiza os dias se trocar de mês
+                
                 alert('⚙️ Metas do mês atualizadas!');
-                configuracoesIniciaisCarregadas = false; // Força recarregar os acumulados atualizados
+                configuracoesIniciaisCarregadas = false; 
                 carregarConfiguracoes();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } catch (erro) {
