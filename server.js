@@ -74,12 +74,11 @@ app.get('/api/configuracoes', async (req, res) => {
     res.json(config);
 });
 
-// Salvamento com Mesclagem
+// Salvamento com Mesclagem e Dia Inativo
 app.post('/api/lancamento-diario', async (req, res) => {
     const dadosRecebidos = req.body;
     const camposParaAtualizar = {};
     
-    // NOVO: Recebe a flag de dia inativo
     if (dadosRecebidos.inativo !== undefined) camposParaAtualizar.inativo = dadosRecebidos.inativo;
 
     if (dadosRecebidos.vendasReais !== undefined) camposParaAtualizar.vendasReais = dadosRecebidos.vendasReais;
@@ -142,9 +141,9 @@ app.get('/api/placar', async (req, res) => {
         let somaVendas = 0;
         let somaAvaria = 0;
 
-        // NOVO: Cálculo Dinâmico de Dias Úteis do Setor (Ignorando inativos)
+        // Cálculo Dinâmico de Dias Úteis do Setor (Ignorando inativos)
         let diasInativos = lancamentosDoSetor.filter(l => l.inativo).length;
-        let diasUteisSetor = Math.max(1, diasUteisPadrao - diasInativos); // Evita divisão por zero
+        let diasUteisSetor = Math.max(1, diasUteisPadrao - diasInativos); 
 
         const maxDiaQualidade = maxPts.qualidade / diasUteisSetor;
         const maxDiaAvaria = maxPts.avaria / diasUteisSetor;
@@ -153,7 +152,7 @@ app.get('/api/placar', async (req, res) => {
         const maxDiaAssid = maxPts.assiduidade / diasUteisSetor;
 
         lancamentosDoSetor.forEach(lancamento => {
-            if (lancamento.inativo) return; // Se não teve operação, ignora o dia para não prejudicar a média
+            if (lancamento.inativo) return; // Se não teve operação, ignora o dia
 
             somaVendas += (lancamento.vendasReais || 0);
             somaAvaria += (lancamento.avariaKg || 0);
