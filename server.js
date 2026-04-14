@@ -79,6 +79,9 @@ app.post('/api/lancamento-diario', async (req, res) => {
     const dadosRecebidos = req.body;
     const camposParaAtualizar = {};
     
+    // NOVO: Recebe a flag de dia inativo
+    if (dadosRecebidos.inativo !== undefined) camposParaAtualizar.inativo = dadosRecebidos.inativo;
+
     if (dadosRecebidos.vendasReais !== undefined) camposParaAtualizar.vendasReais = dadosRecebidos.vendasReais;
     if (dadosRecebidos.avariaKg !== undefined) camposParaAtualizar.avariaKg = dadosRecebidos.avariaKg;
     if (dadosRecebidos.abastecimentoAcertos !== undefined) camposParaAtualizar.abastecimentoAcertos = dadosRecebidos.abastecimentoAcertos;
@@ -101,7 +104,7 @@ app.get('/api/consulta-dia/:setor/:data', async (req, res) => {
     res.json(registro || null);
 });
 
-// A ROTA DO PLACAR COM OS ACUMULADOS EXATOS
+// A ROTA DO PLACAR COM OS ACUMULADOS E A REGRA DOS DIAS INATIVOS
 app.get('/api/placar', async (req, res) => {
     const configuracoes = await configCollection.findOne({ id: "geral" });
     if (!configuracoes) return res.json({ erro: "Configurações não carregadas" });
@@ -124,15 +127,9 @@ app.get('/api/placar', async (req, res) => {
     }).toArray();
 
     const infoMes = obterDiasUteisDoMes(anoCalculo, mesCalculo);
-    const diasUteis = infoMes.diasUteis || 26; 
+    const diasUteisPadrao = infoMes.diasUteis || 26; 
     const maxPts = { vendas: 200, qualidade: 80, avaria: 60, abastecimento: 20, limpeza: 20, assiduidade: 20 };
     
-    const maxDiaQualidade = maxPts.qualidade / diasUteis;
-    const maxDiaAvaria = maxPts.avaria / diasUteis;
-    const maxDiaAbast = maxPts.abastecimento / diasUteis;
-    const maxDiaLimp = maxPts.limpeza / diasUteis;
-    const maxDiaAssid = maxPts.assiduidade / diasUteis;
-
     let pontuacaoTotalLoja = 0;
     const nomesSetores = ["PANIFICAÇÃO", "CONFEITARIA", "TORTAS SALGADAS", "PIZZA", "REFEIÇÃO"];
     let setoresCalculados = [];
@@ -143,9 +140,21 @@ app.get('/api/placar', async (req, res) => {
         let ptsVendas = 0, ptsQualidade = 0, ptsAvaria = 0, ptsAbast = 0, ptsLimp = 0, ptsAssid = 0;
         
         let somaVendas = 0;
-        let somaAvaria = 0; // Guardando o peso bruto
+        let somaAvaria = 0;
+
+        // NOVO: Cálculo Dinâmico de Dias Úteis do Setor (Ignorando inativos)
+        let diasInativos = lancamentosDoSetor.filter(l => l.inativo).length;
+        let diasUteisSetor = Math.max(1, diasUteisPadrao - diasInativos); // Evita divisão por zero
+
+        const maxDiaQualidade = maxPts.qualidade / diasUteisSetor;
+        const maxDiaAvaria = maxPts.avaria / diasUteisSetor;
+        const maxDiaAbast = maxPts.abastecimento / diasUteisSetor;
+        const maxDiaLimp = maxPts.limpeza / diasUteisSetor;
+        const maxDiaAssid = maxPts.assiduidade / diasUteisSetor;
 
         lancamentosDoSetor.forEach(lancamento => {
+            if (lancamento.inativo) return; // Se não teve operação, ignora o dia para não prejudicar a média
+
             somaVendas += (lancamento.vendasReais || 0);
             somaAvaria += (lancamento.avariaKg || 0);
             
