@@ -6,180 +6,249 @@
     <title>TV - Mestres da Fornada</title>
     <style>
         body {
-            margin: 0;
+            background-color: #2b1810; /* Fundo marrom escuro da padaria */
+            color: #f1c40f; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #fff;
-            background-color: #361f14;
-            background-image: linear-gradient(to bottom, #361f14 55%, rgba(54, 31, 20, 0.3) 100%), url('https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=2072&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center bottom;
-            background-attachment: fixed;
-            height: 100vh;
-            overflow: hidden; 
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .cabecalho {
+            text-align: center;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .cabecalho h1 { 
+            margin: 0; 
+            font-size: 28px; 
+            color: #f1c40f;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .layout-principal {
+            display: flex;
+            gap: 25px;
+            flex: 1;
         }
 
-        header { text-align: center; padding: 15px 0; background-color: rgba(0, 0, 0, 0.4); border-bottom: 2px solid #f39c12; }
-        h1 { margin: 0; font-size: 28px; color: #f39c12; letter-spacing: 2px; text-transform: uppercase; }
+        /* LATERAL ESQUERDA - PLACAR GLOBAL */
+        .painel-lateral {
+            background-color: #1a0f0a;
+            border: 2px solid #b8860b;
+            border-radius: 12px;
+            padding: 25px;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        .painel-lateral h2 {
+            color: #fff;
+            font-size: 20px;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .pontos-destaque {
+            font-size: 70px;
+            font-weight: bold;
+            color: #f1c40f;
+            margin: 10px 0;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+        }
+        .pontos-destaque span { 
+            font-size: 22px; 
+            color: #f1c40f;
+        }
+        
+        .barra-fundo {
+            background-color: #4a3b32;
+            width: 100%;
+            height: 14px;
+            border-radius: 7px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .barra-preenchimento {
+            background-color: #f1c40f;
+            height: 100%;
+            width: 0%; /* O script.js vai preencher isso */
+            transition: width 1s ease-in-out;
+            box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+        }
+        .texto-progresso {
+            color: #ccc;
+            font-size: 15px;
+            margin-bottom: 35px;
+            font-weight: bold;
+        }
 
-        .container { display: grid; grid-template-columns: 300px 1fr; gap: 20px; padding: 20px; flex: 1; }
+        .faixas-conquista {
+            width: 100%;
+            background-color: rgba(0,0,0,0.4);
+            padding: 20px;
+            border-radius: 8px;
+            box-sizing: border-box;
+            border: 1px solid #3d2314;
+        }
+        .faixas-conquista h4 { 
+            color: #fff; 
+            margin-top: 0; 
+            margin-bottom: 15px; 
+            font-size: 15px;
+            text-transform: uppercase;
+        }
+        .faixa-item {
+            color: #ddd;
+            font-size: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
 
-        .painel-lateral { background-color: rgba(20, 10, 5, 0.85); border: 1px solid #f39c12; border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: flex-start; }
-        .painel-lateral h2 { margin-top: 0; font-size: 20px; border-bottom: 1px solid #555; padding-bottom: 10px; }
-        .nota-gigante { font-size: 70px; font-weight: bold; color: #f1c40f; margin: 10px 0; text-shadow: 2px 2px 5px #000; }
-        .texto-pontos { font-size: 20px; color: #f1c40f; font-weight: bold; }
+        /* LADO DIREITO - SETORES E MÉDIAS */
+        .area-direita {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        .grid-setores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        
+        /* CARTÕES INJETADOS PELO SCRIPT.JS */
+        .cartao-setor {
+            background-color: #fcf5e5; /* Fundo claro da imagem */
+            color: #333;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            border-bottom: 4px solid #b8860b;
+        }
+        
+        .quadro-geral {
+            background-color: #1a0f0a;
+            border: 1px solid #b8860b;
+            border-radius: 12px;
+            padding: 25px;
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        .quadro-geral h3 {
+            text-align: right;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #f1c40f;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
 
-        .progresso-container { margin-top: 25px; text-align: left; }
-        .progresso-label { font-size: 12px; margin-bottom: 5px; color: #ccc; }
-        .barra-fundo-grande { background-color: rgba(255, 255, 255, 0.1); border: 1px solid #f39c12; border-radius: 10px; height: 15px; width: 100%; overflow: hidden; position: relative; }
-        .barra-preenchimento-grande { background-color: #f1c40f; height: 100%; width: 0%; transition: width 1.5s ease-out; box-shadow: 0 0 10px #f1c40f; }
-        .progresso-valores { text-align: center; font-size: 14px; margin-top: 8px; font-weight: bold; color: #ddd; }
-        .faixas-conquista { margin-top: 40px; background-color: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; text-align: left; font-size: 13px; line-height: 1.8; }
+        /* ESTILOS DAS LINHAS DO QUADRO GERAL (Injetadas pelo JS) */
+        .linha-kpi {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .nome-kpi { 
+            width: 160px; 
+            color: #ccc; 
+            text-transform: uppercase;
+        }
+        .barra-container {
+            flex: 1;
+            background-color: #4a3b32;
+            height: 10px;
+            border-radius: 5px;
+            margin: 0 15px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .barra-fill {
+            background-color: #f1c40f;
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        .valor-kpi { 
+            width: 60px; 
+            text-align: right; 
+            color: #fff; 
+        }
 
-        .coluna-direita { display: flex; flex-direction: column; }
-        .grid-setores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; align-content: start; }
-        .card-setor { background-color: #fcf3ea; color: #333; border-radius: 8px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .card-setor h3 { text-align: center; margin: 0 0 15px 0; font-size: 16px; color: #5c3a21; border-bottom: 2px solid #e0c3a8; padding-bottom: 5px; text-transform: uppercase; }
-
-        .item-avaliacao { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 11px; font-weight: 600; color: #444; }
-        .item-nome { width: 110px; display: flex; align-items: center; gap: 5px; }
-        .item-barra-fundo { flex: 1; background-color: #e0c3a8; height: 8px; border-radius: 4px; margin: 0 10px; overflow: hidden; }
-        .item-barra-preenchimento { background-color: #d35400; height: 100%; width: 0%; transition: width 1s ease-out; }
-        .item-valor { width: 35px; text-align: right; }
-        .setor-pizza, .setor-refeicao { grid-column: span 1; }
-
-        .quadro-geral { background-color: rgba(20, 10, 5, 0.85); border: 1px solid #f39c12; border-radius: 12px; padding: 15px 25px; margin-top: 15px; flex: 1; }
-        .quadro-geral h3 { text-align: center; margin: 0 0 15px 0; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
-        .grid-geral { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 50px; }
-        .geral-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: bold; }
-        .geral-barra { flex: 1; background-color: rgba(255,255,255,0.2); height: 10px; border-radius: 5px; margin: 0 15px; overflow: hidden; }
-        .geral-preenchimento { background-color: #f1c40f; height: 100%; width: 0%; transition: width 1s ease-out; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1 id="titulo-painel">PAINEL MESTRES DA FORNADA - PADARIA DA BALBINA - ABRIL 2026</h1>
-    </header>
-
-    <div class="container">
-        <div class="painel-lateral">
-            <h2>NÍVEL DA FORNADA<br><span style="font-size: 14px; font-weight: normal;">(ACUMULADO)</span></h2>
-            
-            <div>
-                <span class="nota-gigante" id="nota-loja">0</span>
-                <span class="texto-pontos">PONTOS</span>
-            </div>
-
-            <div class="progresso-container">
-                <div class="progresso-label">PROGRESSO MENSAL (4 SEMANAS):</div>
-                <div class="barra-fundo-grande">
-                    <div class="barra-preenchimento-grande" id="barra-mensal"></div>
-                </div>
-                <div class="progresso-valores" id="texto-progresso">0 / 400 PONTOS</div>
-            </div>
-
-            <div class="faixas-conquista">
-                <strong>FAIXAS DE CONQUISTA:</strong><br>
-                🥇 Nível Ouro (360–400)<br>
-                🥈 Nível Prata (300–359)<br>
-                🥉 Nível Bronze (Abaixo de 300)
-            </div>
-        </div>
-
-        <div class="coluna-direita">
-            <div class="grid-setores" id="container-setores"></div>
-
-            <div class="quadro-geral">
-                <h3>Quadro Geral (Média Acumulada da Loja)</h3>
-                <div class="grid-geral" id="container-geral"></div>
-            </div>
-        </div>
+    <div class="cabecalho">
+        <h1>PAINEL MESTRES DA FORNADA - PADARIA DA BALBINA</h1>
     </div>
 
+    <div class="layout-principal">
+        
+        <div class="painel-lateral">
+            <h2>NÍVEL DA FORNADA<br><span style="font-size: 13px; color: #aaa; font-weight: normal;">(ACUMULADO)</span></h2>
+            
+            <div class="pontos-destaque">
+                <span id="xp-total">0</span> <span>PONTOS</span>
+            </div>
+
+            <div style="width: 100%; text-align: left; margin-bottom: 8px; font-size: 13px; color: #ccc; font-weight: bold;">PROGRESSO MENSAL (4 SEMANAS):</div>
+            <div class="barra-fundo">
+                <div id="barra-mensal" class="barra-preenchimento"></div>
+            </div>
+            
+            <div class="texto-progresso"><span id="xp-texto-atual">0</span> / 1000 PONTOS</div>
+
+            <div class="faixas-conquista">
+                <h4>FAIXAS DE CONQUISTA:</h4>
+                <div class="faixa-item">🥇 Nível Ouro (900-1000)</div>
+                <div class="faixa-item">🥈 Nível Prata (750-899)</div>
+                <div class="faixa-item">🥉 Nível Bronze (Abaixo de 750)</div>
+            </div>
+        </div>
+
+        <div class="area-direita">
+            
+            <div id="container-setores" class="grid-setores">
+                <div style="color: #f1c40f; font-size: 18px; text-align: center; width: 100%; margin-top: 50px;">
+                    ⏳ Aquecendo os fornos e conectando ao servidor...
+                </div>
+            </div>
+
+            <div class="quadro-geral">
+                <h3>QUADRO GERAL (MÉDIA DA LOJA)</h3>
+                <div id="container-geral"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+    
     <script>
-        const icones = { vendas: "💰 VENDAS", qualidade: "⭐ QUALIDADE", avaria: "🗑️ PERDAS", abastecimento: "🕒 ABASTECIMENTO", limpeza: "🧹 LIMPEZA", assiduidade: "👤 ASSIDUIDADE" };
-
-        const maximos = { vendas: 200, qualidade: 80, avaria: 60, abastecimento: 20, limpeza: 20, assiduidade: 20 };
-
-        async function atualizarTV() {
-            try {
-                const resposta = await fetch('/api/placar');
-                const dados = await resposta.json();
-
-                // A MÁGICA: O TÍTULO AGORA É DINÂMICO
-                document.getElementById('titulo-painel').innerText = `PAINEL MESTRES DA FORNADA - PADARIA DA BALBINA - ${dados.mesVigente || "ABRIL 2026"}`;
-
-                document.getElementById('nota-loja').innerText = dados.pontuacaoMensal;
-
-                const porcentagemMensal = (dados.pontuacaoMensal / 400) * 100;
-                const larguraBarra = porcentagemMensal > 100 ? 100 : porcentagemMensal; 
-                
-                document.getElementById('barra-mensal').style.width = `${larguraBarra}%`;
-                document.getElementById('texto-progresso').innerText = `${dados.pontuacaoMensal} / 400 PONTOS`;
-
-                const containerSetores = document.getElementById('container-setores');
-                containerSetores.innerHTML = ""; 
-                
-                let somaGeral = { vendas: 0, qualidade: 0, avaria: 0, abastecimento: 0, limpeza: 0, assiduidade: 0 };
-                let totalSetores = dados.setores.length;
-
-                dados.setores.forEach(setor => {
-                    let htmlBarrinhas = "";
-                    
-                    for (let chave in setor.pontos) {
-                        let valor = setor.pontos[chave];
-                        let max = maximos[chave];
-                        let porcentagem = (valor / max) * 100;
-                        
-                        somaGeral[chave] += valor; 
-
-                        htmlBarrinhas += `
-                            <div class="item-avaliacao">
-                                <div class="item-nome">${icones[chave]}</div>
-                                <div class="item-barra-fundo">
-                                    <div class="item-barra-preenchimento" style="width: ${porcentagem}%"></div>
-                                </div>
-                                <div class="item-valor">${valor.toFixed(1)} pt</div>
-                            </div>
-                        `;
-                    }
-
-                    containerSetores.innerHTML += `
-                        <div class="card-setor">
-                            <h3>${setor.nome}</h3>
-                            ${htmlBarrinhas}
-                        </div>
-                    `;
-                });
-
-                const containerGeral = document.getElementById('container-geral');
-                containerGeral.innerHTML = "";
-                
-                for (let chave in somaGeral) {
-                    let media = somaGeral[chave] / totalSetores;
-                    let max = maximos[chave];
-                    let porcentagem = (media / max) * 100;
-
-                    containerGeral.innerHTML += `
-                        <div class="geral-item">
-                            <span style="width: 150px;">${icones[chave]}</span>
-                            <div class="geral-barra">
-                                <div class="geral-preenchimento" style="width: ${porcentagem}%"></div>
-                            </div>
-                            <span style="width: 40px; text-align: right;">${media.toFixed(1)} pt</span>
-                        </div>
-                    `;
-                }
-
-            } catch (erro) {
-                console.error("Erro de conexão:", erro);
+        setInterval(() => {
+            const total = document.getElementById('xp-total').innerText;
+            const textoProgresso = document.getElementById('xp-texto-atual');
+            if(textoProgresso) {
+                textoProgresso.innerText = total;
             }
-        }
-
-        atualizarTV();
-        setInterval(atualizarTV, 10000); 
+        }, 1000);
     </script>
 </body>
 </html>
